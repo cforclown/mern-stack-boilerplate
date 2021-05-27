@@ -15,26 +15,38 @@ const global = require('../src/global/global');
 
 const userAdmin = {
     username: 'admin',
-    password: 'haha',
+    password: 'admin',
+    email: 'admin@gmail.com',
     fullname: 'admin',
     role: null,
     accessToken: null,
 }
 const userBasic = {
     username: 'basic',
-    password: 'haha',
+    password: 'basic',
+    email: 'basic@gmail.com',
     fullname: 'basic',
     role: null,
     accessToken: null,
 }
-var sampleUserData={
-    username: 'haha',
-    password: 'haha@gmail.com',
-    fullname: 'haha@gmail.com',
-    role: null,
+var sampleRoleData={
+    name: 'Sample role',
+    user: {
+        view: true,
+        create: false,
+        update: false,
+        delete: false,
+    },
+    masterData: {
+        view: false,
+        create: false,
+        update: false,
+        delete: false,
+    },
 }
+var roleList=[]
 
-describe('TESTING /api/user', () => {
+describe('TESTING /api/role', () => {
     // BEFORE TESTING
     before(done => {
         database.connect().then(async () => {
@@ -91,10 +103,8 @@ describe('TESTING /api/user', () => {
                 password: await global.Hash(userBasic.password),
             })
             await userBasicDoc.save();
+            
 
-
-
-            sampleUserData.role=basicRoleDoc._id;
 
             done();
         }).catch((err) => done(err));
@@ -117,7 +127,7 @@ describe('TESTING /api/user', () => {
     // BEFORE EVERY TEST, LOGIN BEFORE EVERY TEST
     beforeEach(async () => {
         try{
-            // USER ADMIN LOGIN
+            // ROLE ADMIN LOGIN
             const adminLoginResponse =await request(server).post('/auth/login/test').send(userAdmin)
             if (adminLoginResponse.status !== 200 && adminLoginResponse.status !== 302)
                 throw Error("Login failed");
@@ -139,7 +149,7 @@ describe('TESTING /api/user', () => {
 
 
             
-            // USER BASIC LOGIN
+            // ROLE BASIC LOGIN
             const basicLoginResponse =await request(server).post('/auth/login/test').send(userBasic)
             if (basicLoginResponse.status !== 200 && basicLoginResponse.status !== 302)
                 throw Error("Login failed");
@@ -171,9 +181,30 @@ describe('TESTING /api/user', () => {
 
 
     describe("[GET]", () => {
-        it("GET USER LIST", (done) => {
+        it("GET ROLE LIST", (done) => {
             request(server)
-                .get("/api/user")
+                .get("/api/role")
+                .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
+                .end((err, response) => {
+                    expect(response.status).to.equal(200);
+                    expect(response).to.contain.property('text');
+
+                    const body = JSON.parse(response.text);
+                    expect(body).to.be.an('object');
+                    expect(body).to.contain.property('data');
+
+                    const data = body.data;
+                    expect(data).to.be.an('array');
+
+                    roleList=data;
+
+                    done();
+                })
+        })
+
+        it("FIND ROLEs", (done) => {
+            request(server)
+                .get("/api/role?search=admin")
                 .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
                 .end((err, response) => {
                     expect(response.status).to.equal(200);
@@ -190,47 +221,9 @@ describe('TESTING /api/user', () => {
                 })
         })
 
-        it("FIND USERs", (done) => {
+        it("GET ROLE BY ID", (done) => {
             request(server)
-                .get("/api/user?search=admin")
-                .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
-                .end((err, response) => {
-                    expect(response.status).to.equal(200);
-                    expect(response).to.contain.property('text');
-
-                    const body = JSON.parse(response.text);
-                    expect(body).to.be.an('object');
-                    expect(body).to.contain.property('data');
-
-                    const data = body.data;
-                    expect(data).to.be.an('array');
-
-                    done();
-                })
-        })
-
-        it("GET USER BY ID", (done) => {
-            request(server)
-                .get("/api/user/"+userAdmin._id)
-                .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
-                .end((err, response) => {
-                    expect(response.status).to.equal(200);
-                    expect(response).to.contain.property('text');
-
-                    const body = JSON.parse(response.text);
-                    expect(body).to.be.an('object');
-                    expect(body).to.contain.property('data');
-
-                    const data = body.data;
-                    expect(data).to.be.an('object');
-
-                    done();
-                })
-        })
-
-        it("GET USER PERMISSIONS", (done) => {
-            request(server)
-                .get("/api/user/permissions/"+userAdmin._id)
+                .get("/api/role/"+userAdmin.role)
                 .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
                 .end((err, response) => {
                     expect(response.status).to.equal(200);
@@ -251,11 +244,11 @@ describe('TESTING /api/user', () => {
 
 
     describe("[POST]", () => {
-        it("CREATE USER", (done) => {
+        it("CREATE ROLE", (done) => {
             request(server)
-                .post("/api/user")
+                .post("/api/role")
                 .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
-                .send({ userData: sampleUserData })
+                .send({ roleData: sampleRoleData })
                 .end((err, response) => {
                     expect(response.status).to.equal(200);
                     expect(response).to.contain.property('text');
@@ -267,15 +260,15 @@ describe('TESTING /api/user', () => {
                     const data = body.data;
                     expect(data).to.be.an('object');
 
-                    sampleUserData=data;
+                    sampleRoleData=data;
 
                     done();
                 })
         })
 
-        it("CREATE USER - BAD REQUEST", (done) => {
+        it("CREATE ROLE - BAD REQUEST", (done) => {
             request(server)
-                .post("/api/user")
+                .post("/api/role")
                 .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
                 .end((err, response) => {
                     expect(response.status).to.equal(400);
@@ -283,11 +276,11 @@ describe('TESTING /api/user', () => {
                 })
         })
 
-        it("CREATE USER - UNAUTHORIZED", (done) => {
+        it("CREATE ROLE - UNAUTHORIZED", (done) => {
             request(server)
-                .post("/api/user")
+                .post("/api/role")
                 .set({ Authorization: `Bearer ${userBasic.accessToken}` })
-                .send({ userData: sampleUserData })
+                .send({ roleData: sampleRoleData })
                 .end((err, response) => {
                     expect(response.status).to.equal(403);
                     done();
@@ -298,16 +291,14 @@ describe('TESTING /api/user', () => {
 
 
     describe("[PUT]", () => {
-        it("UPDATE USER", (done) => {
+        it("UPDATE ROLE", (done) => {
             request(server)
-                .put("/api/user")
+                .put("/api/role")
                 .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
                 .send({ 
-                    userData: {
-                        _id: sampleUserData._id,
-                        username: 'hehe',
-                        fullname: 'hehe@gmail.com',
-                        role: sampleUserData.role,
+                    roleData: {
+                        ...sampleRoleData,
+                        name: 'update role name',
                     }
                 })
                 .end((err, response) => {
@@ -325,9 +316,9 @@ describe('TESTING /api/user', () => {
                 })
         })
 
-        it("UPDATE USER - BAD REQUEST", (done) => {
+        it("UPDATE ROLE - BAD REQUEST", (done) => {
             request(server)
-                .put("/api/user")
+                .put("/api/role")
                 .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
                 .end((err, response) => {
                     expect(response.status).to.equal(400);
@@ -335,38 +326,12 @@ describe('TESTING /api/user', () => {
                 })
         })
 
-        it("UPDATE USER - UNAUTHORIZED", (done) => {
+        it("UPDATE ROLE - UNAUTHORIZED", (done) => {
             request(server)
-                .put("/api/user")
+                .put("/api/role")
                 .set({ Authorization: `Bearer ${userBasic.accessToken}` })
-                .send({ userData: sampleUserData })
                 .end((err, response) => {
                     expect(response.status).to.equal(403);
-                    done();
-                })
-        })
-
-        it("CHANGE USER AVATAR", (done) => {
-            request(server)
-                .put("/api/user/avatar")
-                .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
-                .send({ 
-                    avatarData: {
-                        filename: "haha.png",
-                        file: "hahahahahahahahahahahahah",
-                    }
-                })
-                .end((err, response) => {
-                    expect(response.status).to.equal(200);
-                    expect(response).to.contain.property('text');
-
-                    const body = JSON.parse(response.text);
-                    expect(body).to.be.an('object');
-                    expect(body).to.contain.property('data');
-
-                    const data = body.data;
-                    expect(data).to.be.an('string');
-
                     done();
                 })
         })
@@ -375,9 +340,9 @@ describe('TESTING /api/user', () => {
 
 
     describe("[DELETE]", () => {
-        it("DELETE USER", (done) => {
+        it("DELETE ROLE", (done) => {
             request(server)
-                .delete("/api/user/"+sampleUserData._id)
+                .delete("/api/role/"+sampleRoleData._id)
                 .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
                 .end((err, response) => {
                     expect(response.status).to.equal(200);

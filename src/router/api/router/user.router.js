@@ -2,6 +2,8 @@ const express = require('express')
 const global = require('../../../global/global')
 const userController = require('../../../database/controller/user.controller')
 
+
+
 const router = express.Router()
 
 router.get('/', async (req, res) => {
@@ -26,9 +28,9 @@ router.get('/:userId', async (req, res) => {
         res.status(err.status?err.status:500).send(global.ErrorResponse(err.message))
     }
 })
-router.get('/permissions', async (req, res) => {
+router.get('/permissions/:userId', async (req, res) => {
     try {
-        const permissions = await userController.getUserPermissions(req.user.userId)
+        const permissions = await userController.getUserPermissions(req.params.userId?req.params.userId:req.user.userId)
         res.send(global.Response(permissions));
     }
     catch (err) {
@@ -68,19 +70,6 @@ router.put('/', async (req, res) => {
         res.status(err.status?err.status:500).send(global.ErrorResponse(err.message))
     }
 });
-router.put('/avatar', async (req, res) => {
-    try {
-        if(!req.body.avatarData)
-            return res.status(400).send("Avatar data not found");
-
-        const avatarId = await userController.changeUserAvatar(req.user.userId, req.body.avatarData);
-        res.send(global.Response(avatarId));
-    }
-    catch (err) {
-        global.DumpError(err)
-        res.status(err.status?err.status:500).send(global.ErrorResponse(err.message))
-    }
-});
 
 router.delete('/:userId', async (req, res) => {
     try {
@@ -97,6 +86,63 @@ router.delete('/:userId', async (req, res) => {
         res.status(err.status?err.status:500).send(global.ErrorResponse(err.message));
     }
 });
+
+
+
+//#region PROFILE STUFF
+router.get('/profile/:userId', async (req, res) => {
+    try {
+        const profile = await userController.getUserProfile(req.params.userId)
+        res.send(global.Response(profile));
+    }
+    catch (err) {
+        global.DumpError(err)
+        res.status(err.status?err.status:500).send(global.ErrorResponse(err.message))
+    }
+});
+
+router.put('/profile', async (req, res) => {
+    try {
+        if(!req.body.userData)
+            return res.status(400).send("User data not found");
+
+        const profile = await userController.updateProfile(req.body.userData);
+        res.send(global.Response(profile));
+    }
+    catch (err) {
+        global.DumpError(err)
+        res.status(err.status?err.status:500).send(global.ErrorResponse(err.message))
+    }
+});
+router.put('/profile/avatar', async (req, res) => {
+    try {
+        if(!req.body.avatarData)
+            return res.status(400).send("Avatar data not found");
+
+        const avatarId = await userController.changeUserAvatar(req.user.userId, req.body.avatarData);
+        res.send(global.Response(avatarId));
+    }
+    catch (err) {
+        global.DumpError(err)
+        res.status(err.status?err.status:500).send(global.ErrorResponse(err.message))
+    }
+});
+router.put('/profile/username', async (req, res) => {
+    try {
+        if(!req.body.userData)
+            return res.status(400).send("User data not found");
+
+        const userData = await userController.changeUserUsername(req.body.userData);
+        res.send(global.Response(userData));
+    }
+    catch (err) {
+        global.DumpError(err)
+        res.status(err.status?err.status:500).send(global.ErrorResponse(err.message))
+    }
+});
+//#endregion
+
+
 
 module.exports = router
 

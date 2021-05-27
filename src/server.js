@@ -1,14 +1,18 @@
 "use strict";
 
+const path = require("path");
 const config=require('./config');
 const database = require("./database/database");
 const global=require('./global/global');
 
 
+
 // CREATE FOLDER dump-log IF NOT EXIST
 const fs = require("fs");
-if (!fs.existsSync("./dump-log"))
-    fs.mkdirSync("./dump-log");
+if (!fs.existsSync(path.join(__dirname, "../dump-log")))
+    fs.mkdirSync(path.join(__dirname, "../dump-log"));
+    
+
     
 database.connect().then(async () => {
     try{
@@ -18,7 +22,7 @@ database.connect().then(async () => {
 
         const app = require('./app');
         await app.listen(app.get("port"), app.get("host"));
-        global.LogGreen(`| SERVER LISTENING ON PORT [${app.get("host")}/${app.get("port")}]`);
+        global.LogGreen(`| SERVER LISTENING ON [${app.get("host")}/${app.get("port")}]`);
         global.LogBgGreen("============================================================================");
 
         await InsertStaticAttributes();

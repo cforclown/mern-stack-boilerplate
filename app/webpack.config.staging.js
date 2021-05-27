@@ -12,7 +12,7 @@ module.exports = {
     devtool: "source-map",
     entry: "./src/index",
     output: {
-        path: path.resolve(__dirname, "build"),
+        path: path.resolve(__dirname, "staging"),
         publicPath: "/",
         filename: "bundle.js",
     },
@@ -28,8 +28,8 @@ module.exports = {
             // This global makes sure React is built in prod mode.
             "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
             "process.env.PUBLIC_URL": JSON.stringify("/"),
-            "process.env.HOME_URL": JSON.stringify("https://hafisalrizal.com"),
-            "process.env.API_URL": JSON.stringify("https://hafisalrizal.com:55512"),
+            "process.env.HOME_URL": JSON.stringify("http://localhost:55500"),
+            "process.env.API_URL": JSON.stringify("http://localhost:55512"),
             "process.env.SESSION_TAG": JSON.stringify("ha-mern-stack"),
             "process.env.SESSION_PATH": JSON.stringify("/"),
         }),

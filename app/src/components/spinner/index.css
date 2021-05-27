@@ -36,17 +36,17 @@
     animation: sk-bounce 2.0s infinite ease-in-out;
 }
 
+.spinner-primary > .double-bounce1{
+    background-color: #5f27cd;
+}
+.spinner-primary > .double-bounce2{
+    background-color: #5f27cd;
+}
 .spinner-info > .double-bounce1{
     background-color: rgb(0, 140, 255);
 }
 .spinner-info > .double-bounce2{
     background-color: rgb(0, 140, 255);
-}
-.spinner-primary > .double-bounce1{
-    background-color: #20b2aa;
-}
-.spinner-primary > .double-bounce2{
-    background-color: #20b2aa;
 }
 .spinner-secondary > .double-bounce1{
     background-color: rgb(139, 139, 139);

@@ -21,7 +21,7 @@
 
     padding: 0 1rem;
 
-    font-family: 'Raleway-Bold';
+    font-family: 'Quicksand-Bold';
     color: #FFFFFF;
 }
     #ha-home-navbar .ha-home-navbar-left {
@@ -57,11 +57,13 @@
     justify-content: flex-start;
     align-items: center;
 
-    font-family: 'Raleway-Regular';
+    font-family: 'Quicksand-Medium';
     color: #222f3e;
 }
 
 .ha-profile {
+    position: relative;
+
     padding: 2rem 3rem;
     margin: 2rem 3rem;
 
@@ -83,7 +85,7 @@
     justify-content: center;
     align-items: center;
 
-    margin-right: 4rem;
+    margin-right: 2rem;
 }
     .ha-profile-avatar-camera-btn {
         position: absolute;
@@ -105,10 +107,15 @@
 
     width: 100%;
 }
+    .ha-profile-details-username {
+        font-family: 'Quicksand-Bold';
+        color: #2e86de;
+    }
+
     .ha-profile-details input[type=text],
     .ha-profile-details input[type=date] {
         display: inline-block;
-        background-color: #f2f2f2;
+        background-color: #FFFFFF;
         padding: 12px 23px;
         margin: 0 0 24px 0;
         width: 100%;
@@ -121,7 +128,7 @@
 
         text-align: left;
         text-decoration: none;
-        /* font-family: 'Quicksand-Bold'; */
+        font-family: 'Quicksand-Medium';
         font-size: 1rem;
         /* font-weight: bold; */
         color: #3a3a3a;
@@ -132,6 +139,10 @@
         -ms-transition: all 0.3s ease-in-out;
         -o-transition: all 0.3s ease-in-out;
     }
+        .ha-profile-details input[type=text]:disabled,
+        .ha-profile-details input[type=date]:disabled {
+            background-color: #f2f2f2;
+        }
         .ha-profile-details input[type=text]:focus,
         .ha-profile-details input[type=date]:focus {
             background-color: #fff;
@@ -206,7 +217,7 @@
     -moz-border-radius: 5px 5px 5px 5px;
     -ms-border-radius: 5px 5px 5px 5px;
     -o-border-radius: 5px 5px 5px 5px;
-    margin: 12px 0px 0px 0px;
+    // margin: 0;
 
     font-family: 'Quicksand-Bold';
 
@@ -216,29 +227,44 @@
     -o-transition: all 0.3s ease-in-out;
     transition: all 0.3s ease-in-out;
 } 
-#ha-home input[type=submit]:hover {
-        background-color: #39ace7;
-    }
-    #ha-home input[type=submit]:active {
-        -moz-transform: scale(0.95);
-        -webkit-transform: scale(0.95);
-        -o-transform: scale(0.95);
-        -ms-transform: scale(0.95);
-        transform: scale(0.95);
-    }
-    #ha-home input[type=submit].ha-home-cancel-btn {
-    background-color: #ed5656;
-    box-shadow: 0 0 20px 0 rgba(233, 95, 95, 0.4);
-    -webkit-box-shadow: 0 0 20px 0 rgba(233, 95, 95, 0.4);
-    -moz-box-shadow: 0 0 20px 0 rgba(233, 95, 95, 0.4);
-    -ms-box-shadow: 0 0 20px 0 rgba(233, 95, 95, 0.4);
-    -o-box-shadow: 0 0 20px 0 rgba(233, 95, 95, 0.4);
-} 
-    #ha-home input[type=submit]:hover.ha-home-cancel-btn {
-        background-color: #df4747; 
+    #ha-home input[type=submit]:hover {
+            background-color: #39ace7;
+        }
+        #ha-home input[type=submit]:active {
+            -moz-transform: scale(0.95);
+            -webkit-transform: scale(0.95);
+            -o-transform: scale(0.95);
+            -ms-transform: scale(0.95);
+            transform: scale(0.95);
+        }
+        #ha-home input[type=submit].ha-home-cancel-btn {
+        background-color: #ed5656;
         box-shadow: 0 0 20px 0 rgba(233, 95, 95, 0.4);
         -webkit-box-shadow: 0 0 20px 0 rgba(233, 95, 95, 0.4);
         -moz-box-shadow: 0 0 20px 0 rgba(233, 95, 95, 0.4);
         -ms-box-shadow: 0 0 20px 0 rgba(233, 95, 95, 0.4);
         -o-box-shadow: 0 0 20px 0 rgba(233, 95, 95, 0.4);
-    }
+    } 
+        #ha-home input[type=submit]:hover.ha-home-cancel-btn {
+            background-color: #df4747; 
+            box-shadow: 0 0 20px 0 rgba(233, 95, 95, 0.4);
+            -webkit-box-shadow: 0 0 20px 0 rgba(233, 95, 95, 0.4);
+            -moz-box-shadow: 0 0 20px 0 rgba(233, 95, 95, 0.4);
+            -ms-box-shadow: 0 0 20px 0 rgba(233, 95, 95, 0.4);
+            -o-box-shadow: 0 0 20px 0 rgba(233, 95, 95, 0.4);
+        }
+
+.ha-home-loader-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba($color: #FFFFFF, $alpha: 0.75);
+    border-radius: 8px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

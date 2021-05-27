@@ -20,25 +20,12 @@ router.post('/register', async (req, res)=>{
     try{
         if(!req.body.registerData)
             return res.status(400).send(global.ErrorResponse("Register data not found"));
-        if(!req.body.registerData.username)
-            return res.status(400).send(global.ErrorResponse("Username not found"));
-        if(!req.body.registerData.password)
-            return res.status(400).send(global.ErrorResponse("Password not found"));
-        if(!req.body.registerData.confirmPassword)
-            return res.status(400).send(global.ErrorResponse("Confirmation password not found"));
-        if(req.body.registerData.password!==req.body.registerData.confirmPassword)
-            return res.status(400).send(global.ErrorResponse("Confirmation password is incorrect"));
-        if(!req.body.registerData.email)
-            return res.status(400).send(global.ErrorResponse("Email not found"));
-        if(!req.body.registerData.fullname)
-            return res.status(400).send(global.ErrorResponse("Fullname not found"));
 
         const user=await userController.registerUser(req.body.registerData);
 
         const userData={
             userId:user._id,
             username: user.username,
-            email: user.email,
             fullname: user.fullname,
             role: user.role,
         };
@@ -81,7 +68,6 @@ router.post('/login/test', async (req, res)=>{       // LOGIN SUCCESS
         const userData={
             userId:user._id,
             username:user.username,
-            email:user.email,
             fullname:user.fullname,
             avatar: user.avatar,
             role:user.role,
@@ -108,7 +94,6 @@ router.get('/login/verify', async (req, res)=>{       // LOGIN SUCCESS
         const userData={
             userId:req.user._id,
             username:req.user.username,
-            email:req.user.email,
             fullname:req.user.fullname,
             avatar: req.user.avatar,
             role:req.user.role,
@@ -145,7 +130,6 @@ router.post('/refresh', async (req, res)=>{
             const userData={
                 userId:user.userId,
                 username:user.username,
-                email:user.email,
                 fullname:user.fullname,
                 avatar: user.avatar,
                 role:user.role,
@@ -228,7 +212,6 @@ function TokenResponse(_userData, _accessToken, _refreshToken){
     this.userData={
         userId:_userData.userId,
         username:_userData.username,
-        email:_userData.email,
         fullname:_userData.fullname,
         avatar:_userData.avatar,
         role:{

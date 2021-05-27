@@ -115,10 +115,41 @@ app.use("/auth", authRouter);
 app.use("/api", apiRouter);
 
 // HOME
-app.use(express.static(path.join(__dirname, "../public")));
-app.get('/*', (req, res)=>{
-    res.sendFile(path.join(__dirname, '../public/index.html'));
-})
+const fs = require("fs");
+if(config.NODE_ENV==="development"){
+    if (fs.existsSync(path.join(__dirname, "../app/staging"))){
+        app.use(express.static(path.join(__dirname, "../app/staging")));
+        app.get('/*', (req, res)=>{
+            res.sendFile(path.join(__dirname, "../app/staging/index.html"));
+        })
+    }
+    else{
+        app.use(express.static(path.join(__dirname, "../public")));
+        app.get('/*', (req, res)=>{
+            res.sendFile(path.join(__dirname, "../public/index.html"));
+        })
+    }
+}
+else if(config.NODE_ENV==="production"){
+    if (fs.existsSync(path.join(__dirname, "../app/build"))){
+        app.use(express.static(path.join(__dirname, "../app/build")));
+        app.get('/*', (req, res)=>{
+            res.sendFile(path.join(__dirname, "../app/build/index.html"));
+        })
+    }
+    else{
+        app.use(express.static(path.join(__dirname, "../public")));
+        app.get('/*', (req, res)=>{
+            res.sendFile(path.join(__dirname, "../public/index.html"));
+        })
+    }
+}
+else {
+    app.use(express.static(path.join(__dirname, "../public")));
+    app.get('/*', (req, res)=>{
+        res.sendFile(path.join(__dirname, "../public/index.html"));
+    })
+}
 //#endregion -----------------------------------------------------------------------
 
 

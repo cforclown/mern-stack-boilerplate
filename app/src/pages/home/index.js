@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCamera } from '@fortawesome/free-solid-svg-icons';
 import {toast} from 'react-toastify';
 
+import Loader from '../../components/loader'
 import UserAvatar from '../../components/user-avatar'
 import Request from '../../request'
 import { SetUserAvatar } from '../../reducer/actions'
@@ -17,6 +18,9 @@ function Home(props) {
     //#region COMPONENT STATEs
     const dispatch = useDispatch();
     const userData = useSelector((state)=>state.session?state.session.userData:null);
+    const [isLoading, setIsLoading]=useState(false);
+    const [onEdit, setOnEdit]=useState(null);
+    const [profile, setProfile]=useState(null);
     const [avatar, setAvatar]=useState(userData.avatar);
 
     const avatarInputRef=useRef();
@@ -24,19 +28,63 @@ function Home(props) {
 
 
     useEffect(() => {
+        getUserProfile(userData.userId);
         setAvatar(userData.avatar);
-    }, [userData])
+    }, [userData]);
 
 
+    async function getUserProfile(userId){
+        try{
+            setIsLoading(true);
+            const profile=await Request("/user/profile/"+userId);
+            
+            setProfile({
+                ...profile,
+                userId: profile._id,
+            });
+            setIsLoading(false);
+        }
+        catch(err){
+            if(err.isUnauthorized)
+                return history.push('/login');
 
+            toast.error(err.message);
+            setIsLoading(false);
+        }
+    }
+    async function updateUserProfile(newProfile){
+        try{
+            setIsLoading(true);
+            await Request("/user/profile", {
+                method: 'PUT',
+                body: JSON.stringify({userData:newProfile}),
+            });
+            
+            toast.success("Profile updated");
+            
+            setOnEdit(null);
+            getUserProfile(userData.userId);
+        }
+        catch(err){
+            if(err.isUnauthorized)
+                return history.push('/login');
+
+            toast.error(err.message);
+            setIsLoading(false);
+        }
+    }
     async function changeAvatar(avatarData){
         try{
-            const avatar=await Request("/user/avatar", {
+            setIsLoading(true);
+            const avatar=await Request("/user/profile/avatar", {
                 method: 'PUT',
                 body: JSON.stringify({avatarData}),
             });
+            
+            toast.success("Avatar updated");
 
             dispatch(SetUserAvatar(avatar));
+            setIsLoading(false);
         }
         catch(err){
             if(err.isUnauthorized){
@@ -45,11 +93,24 @@ function Home(props) {
             }
 
             toast.error(err.message);
+            setIsLoading(false);
         }
     }
 
 
 
+    function onSaveProfileClick(){
+        if(!onEdit.email || onEdit.email==="")
+            return toast.error("Email is empty");
+        if(!onEdit.fullname || onEdit.fullname==="")
+            return toast.error("Fullname is empty");
+
+        updateUserProfile({
+            _id: profile._id,
+            email: onEdit.email,
+            fullname: onEdit.fullname,
+        });
+    }
     function onBrowseAvatarClick(){
         avatarInputRef.current.click();
     }
@@ -95,8 +156,8 @@ function Home(props) {
                 </div>
                 <div className='ha-home-navbar-right'>
                     <UserAvatar 
-                        fullname={userData?userData.fullname:""}
-                        avatar={userData?userData.avatar:null}
+                        fullname={profile?profile.fullname:""}
+                        avatar={avatar?avatar:null}
                         size={32}
                     />
                 </div>
@@ -106,7 +167,7 @@ function Home(props) {
                 <div className="ha-profile mb-4">
                     <div className="ha-profile-avatar" >
                         <UserAvatar 
-                            fullname={userData?userData.fullname:""}
+                            fullname={profile?profile.fullname:""}
                             avatar={avatar?avatar:null}
                             size={120}
                         />
@@ -131,21 +192,77 @@ function Home(props) {
                     </div>
 
                     <div className="ha-profile-details">
-                        <h6>Username</h6>
-                        <input value={userData?userData.username:""} type="text" disabled />
-
-                        <h6>Fullname</h6>
-                        <input value={userData?userData.fullname:""} type="text" disabled />
+                        <h2 className='ha-profile-details-username mb-4'>@{profile?profile.username:""}</h2>
 
                         <h6>Email</h6>
-                        <input value={userData?userData.email:""} type="text" disabled />
+                        <input
+                            type="text"
+                            value={
+                                onEdit?onEdit.email:
+                                profile?profile.email:""
+                            } 
+                            onChange={e=>{
+                                if(!onEdit) return;
+
+                                setOnEdit({
+                                    ...onEdit,
+                                    email: e.target.value
+                                })
+                            }}
+                            disabled={onEdit?false:true} 
+                        />
+
+                        <h6>Fullname</h6>
+                        <input 
+                            type="text" 
+                            value={
+                                onEdit?onEdit.fullname:
+                                profile?profile.fullname:""
+                            } 
+                            onChange={e=>{
+                                if(!onEdit) return;
+
+                                setOnEdit({
+                                    ...onEdit,
+                                    fullname: e.target.value
+                                })
+                            }}
+                            disabled={onEdit?false:true} 
+                        />
+
+                        {
+                            onEdit ?
+                            <div className='d-flex flex-row align-items-center'>
+                                <input type='submit' value='SAVE' onClick={onSaveProfileClick} style={{margin: "0 16px 0 0"}}/>
+                                <input className="ha-home-cancel-btn" type='submit' value='CANCEL' onClick={()=>setOnEdit(null)} />
+                            </div> :
+                            <div className='d-flex flex-row justify-content-center align-items-center'>
+                                <input type='submit' value='EDIT' onClick={()=>{
+                                    if(!profile)
+                                        return;
+                                    setOnEdit({
+                                        email: profile.email,
+                                        fullname: profile.fullname,
+                                    })
+                                }} />
+                            </div>
+                        }
                     </div>
+
+                    {
+                        isLoading || !profile ?
+                        <div className='ha-home-loader-container'>
+                            <Loader />
+                        </div> :
+                        null
+                    }
                 </div>
 
                 <div className="ha-actions">
                     <input className="ha-home-cancel-btn" type='submit' value='LOGOUT' onClick={onLogoutClick} />
                 </div>
             </div>
+
         </div>
     );
 }

@@ -59,7 +59,7 @@ exports.DumpError=function(_err, saveLog=true){
             `
 
             const filename=moment().format('DD MMMM YYYY')+'.txt';
-            fs.appendFile(path.join(__dirname, '../dump-log/'+filename), errorMessage, (err)=>{
+            fs.appendFile(path.join(__dirname, '../../dump-log/'+filename), errorMessage, (err)=>{
                 if(err) console.log(consoleOut.TextError, err.message);
                 else    console.log(consoleOut.TextRed, 'Error saved');
             })
