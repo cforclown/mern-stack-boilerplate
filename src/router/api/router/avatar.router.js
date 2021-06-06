@@ -1,26 +1,14 @@
-const express = require('express')
-const global = require('../../../global/global')
-const avatarController = require('../../../database/controller/avatar.controller');
+const express = require("express");
+const validate = require("../../../middleware/validate");
+const avatarController = require("../../../controller/avatar");
+const avatarDto = require("../../../dto/avatar");
 
-const router = express.Router()
+const router = express.Router();
 
-router.get('/:avatarId', async (req, res) => {
-    try {
-        const avatar = await avatarController.getAvatar(req.params.avatarId);
-        if (!avatar || !avatar.file)
-            return res.sendStatus(404);
-    
-        const imageBase64 = avatar.file.split(";base64,")[1];
-        const imageBuffer = new Buffer(imageBase64, "base64");
-        res.send(imageBuffer);
-    }
-    catch (err) {
-        global.DumpError(err)
-        res.status(err.status?err.status:500).send(global.ErrorResponse(err.message))
-    }
-})
+router.get("/:avatarId", avatarController.get);
+router.put("/", validate(avatarDto), avatarController.update);
 
-module.exports = router
+module.exports = router;
 
 /**
  * @swagger
@@ -36,4 +24,20 @@ module.exports = router
  *          -   name: avatarId
  *              in: path
  *              required: true
+ *      put:
+ *          tags:
+ *              - Avatar
+ *          description: Update user avatar
+ *          responses:
+ *              '200':
+ *                  description: OK
+ *          security:
+ *              - Bearer: []
+ *          requestBody:
+ *              description: "Avatar data"
+ *              required: true
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/avatarData'
  */

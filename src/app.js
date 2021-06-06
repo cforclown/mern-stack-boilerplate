@@ -1,6 +1,6 @@
 "use strict";
 
-const config = require('./config');
+const config = require("./config");
 const express = require("express");
 const path = require("path");
 const logger = require("morgan");
@@ -11,20 +11,17 @@ const expressSession = require("express-session");
 const expressFlash = require("express-flash");
 const cors = require("cors");
 
-const swaggerJsDoc = require('swagger-jsdoc');
-const swaggerUI = require('swagger-ui-express');
-const swaggerSchemas=require('./swagger-schemas');
-
-
+const swaggerJsDoc = require("swagger-jsdoc");
+const swaggerUI = require("swagger-ui-express");
+const swaggerSchemas = require("./swagger-schemas");
 
 // IF NODE_ENV IS test, DEFINE DB SCHEMAs
-if(config.NODE_ENV==='test')
-    require('./database/database').registerModels();
+if (config.NODE_ENV === "test") {
+    require("./database").registerModels();
+}
 
 // INIT AUTHENTICATION STRATEGY
 const initPassportConfig = require("./passport-config/passport-config");
-
-
 
 const app = express();
 
@@ -34,21 +31,25 @@ app.use(bodyParser.json({ limit: "10mb" }));
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 
 // CORS
-app.use(cors({
-    origin: config.APP_HOST.split(' '),
-    credentials: true,
-}));
+app.use(
+    cors({
+        origin: config.APP_HOST.split(" "),
+        credentials: true,
+    })
+);
 
 app.use(expressFlash());
-app.use(expressSession({
-    secret: config.SESSION_SECRET,
-    resave: config.SESSION_RESAVE,
-    saveUninitialized: config.SESSION_SAVE_UNINITIALIZED,
-    cookie: {
-        secure: false,
-        maxAge: parseInt(config.SESSION_COOKIE_MAX_AGE),
-    },
-}));
+app.use(
+    expressSession({
+        secret: config.SESSION_SECRET,
+        resave: config.SESSION_RESAVE,
+        saveUninitialized: config.SESSION_SAVE_UNINITIALIZED,
+        cookie: {
+            secure: false,
+            maxAge: parseInt(config.SESSION_COOKIE_MAX_AGE),
+        },
+    })
+);
 app.use(cookieParser(config.SESSION_SECRET));
 
 // INIT PASSPORT CONFIGURATION
@@ -57,104 +58,91 @@ app.use(passport.session());
 initPassportConfig(passport);
 //#endregion =======================================================================
 
-
-
 //#region =========================== SWAGGER CONFIG ===========================
 // extended : https://swagger.io/specification/#infoObject
 const swaggerOptions = {
     definition: {
-        openapi: '3.0.0',
+        openapi: "3.0.0",
         info: {
             title: "API",
-            version: '1.0.0',
+            version: "1.0.0",
             description: "API Documentation",
             contact: {
                 name: "Hafis Alrizal",
                 url: "https://hafisalrizal.com",
                 email: "hafisalrizal@gmail.com",
             },
-            servers: [`http://${config.HOST}:${config.PORT}`]
+            servers: [`http://${config.HOST}:${config.PORT}`],
         },
-        consumes: [ "application/json", ],
-        produces: [ "application/json", ],
+        consumes: ["application/json"],
+        produces: ["application/json"],
         schemes: ["http", "https"],
         components: {
-            schemas:swaggerSchemas,
+            schemas: swaggerSchemas,
             securitySchemes: {
                 Bearer: {
-                    "type": "apiKey",
-                    "name": "Authorization",
-                    "in": "header"
+                    type: "apiKey",
+                    name: "Authorization",
+                    in: "header",
                 },
-            }
+            },
         },
         securityDefinitions: {
             Bearer: {
-                "type": "apiKey",
-                "name": "Authorization",
-                "in": "header"
-            }
+                type: "apiKey",
+                name: "Authorization",
+                in: "header",
+            },
         },
         security: {
-            Bearer: []
+            Bearer: [],
         },
     },
     apis: ["./src/router/api/router/*.js", "./src/router/auth/*.js"],
-}
-const swaggerDocs = swaggerJsDoc(swaggerOptions)
-app.use('/api/docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs))
+};
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use("/api/docs", swaggerUI.serve, swaggerUI.setup(swaggerDocs));
 //#endregion -----------------------------------------------------------------------
 
-
-
 //#region -----------------------------------ROUTES---------------------------------
-const authRouter = require("./router/auth/auth");
-const apiRouter = require("./router/api/api");
-
-app.use("/auth", authRouter);
-app.use("/api", apiRouter);
+const router = require("./router");
+app.use("/", router);
 
 // HOME
 const fs = require("fs");
-if(config.NODE_ENV==="development"){
-    if (fs.existsSync(path.join(__dirname, "../app/staging"))){
+if (config.NODE_ENV === "development") {
+    if (fs.existsSync(path.join(__dirname, "../app/staging"))) {
         app.use(express.static(path.join(__dirname, "../app/staging")));
-        app.get('/*', (req, res)=>{
+        app.get("/*", (req, res) => {
             res.sendFile(path.join(__dirname, "../app/staging/index.html"));
-        })
-    }
-    else{
+        });
+    } else {
         app.use(express.static(path.join(__dirname, "../public")));
-        app.get('/*', (req, res)=>{
+        app.get("/*", (req, res) => {
             res.sendFile(path.join(__dirname, "../public/index.html"));
-        })
+        });
     }
-}
-else if(config.NODE_ENV==="production"){
-    if (fs.existsSync(path.join(__dirname, "../app/build"))){
+} else if (config.NODE_ENV === "production") {
+    if (fs.existsSync(path.join(__dirname, "../app/build"))) {
         app.use(express.static(path.join(__dirname, "../app/build")));
-        app.get('/*', (req, res)=>{
+        app.get("/*", (req, res) => {
             res.sendFile(path.join(__dirname, "../app/build/index.html"));
-        })
-    }
-    else{
+        });
+    } else {
         app.use(express.static(path.join(__dirname, "../public")));
-        app.get('/*', (req, res)=>{
+        app.get("/*", (req, res) => {
             res.sendFile(path.join(__dirname, "../public/index.html"));
-        })
+        });
     }
-}
-else {
+} else {
     app.use(express.static(path.join(__dirname, "../public")));
-    app.get('/*', (req, res)=>{
+    app.get("/*", (req, res) => {
         res.sendFile(path.join(__dirname, "../public/index.html"));
-    })
+    });
 }
 //#endregion -----------------------------------------------------------------------
-
-
 
 app.set("port", config.PORT);
 app.set("host", config.HOST);
 
-module.exports=app;
+module.exports = app;

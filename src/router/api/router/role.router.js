@@ -1,81 +1,17 @@
-const express = require('express');
-const global = require('../../../global/global');
-const roleController = require('../../../database/controller/role.controller');
+const express = require("express");
+const validate = require("../../../middleware/validate");
+const roleController = require("../../../controller/role");
+const roleDto = require("../../../dto/role");
 
 const Router = express.Router();
 
-Router.get('/', async (req, res) => {
-    try {
-        const roleList = (req.query.search && req.query.search.trim()!=='') ? 
-                            await roleController.findRole(req.query.search):
-                            await roleController.getRoleList();
-        res.send(global.Response(roleList))
-    }
-    catch (err) {
-        global.DumpError(err)
-        res.status(500).send(global.Response(null, err.message))
-    }
-})
-Router.get('/:roleId', async (req, res) => {
-    try {
-        if(!req.params.roleId)
-            return res.sendStatus(400)
-        const role = await roleController.getRole(req.params.roleId)
-        if(!role)
-            return res.status(404).send(global.Response(null, "Role tidak ditemukan"));
-        res.send(global.Response(role));
-    }
-    catch (err) {
-        global.DumpError(err)
-        res.status(500).send(global.Response(null, err.message))
-    }
-})
-Router.post('/', async (req, res) => {
-    try {
-        if (!req.user.role.masterData.create)
-            return res.sendStatus(403)
-        if(!req.body.roleData)
-            return res.status(400).send("Data Role tidak ditemukan")
+Router.post("/", validate(roleDto), roleController.create);
+Router.get("/", roleController.getAll);
+Router.get("/:roleId", roleController.get);
+Router.put("/", validate(roleDto), roleController.update);
+Router.delete("/:roleId", roleController.delete);
 
-        const role = await roleController.createRole(req.body.roleData);
-        res.send(global.Response(role));
-    }
-    catch (err) {
-        global.DumpError(err)
-        res.status(err.status?err.status:500).send(global.ErrorResponse(err.message));
-    }
-});
-Router.put('/', async (req, res) => {
-    try {
-        if (!req.user.role.masterData.update)
-            return res.sendStatus(403)
-        if(!req.body.roleData)
-            return res.status(400).send("Data Role tidak ditemukan")
-
-        const role = await roleController.updateRole(req.body.roleData);
-        res.send(global.Response(role));
-    }
-    catch (err) {
-        global.DumpError(err)
-        res.status(err.status?err.status:500).send(global.ErrorResponse(err.message));
-    }
-});
-Router.delete('/:roleId', async (req, res) => {
-    try {
-        if (!req.user.role.masterData.delete)
-            return res.sendStatus(403)
-        if(!req.params.roleId)
-            return res.sendStatus(400)
-        const roleId=await roleController.deleteRole(req.params.roleId);
-        res.send(global.Response(roleId));
-    }
-    catch (err) {
-        global.DumpError(err)
-        res.status(err.status?err.status:500).send(global.ErrorResponse(err.message));
-    }
-});
-
-module.exports = Router
+module.exports = Router;
 
 /**
  * @swagger
