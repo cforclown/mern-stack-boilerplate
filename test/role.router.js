@@ -3,107 +3,18 @@ process.env.NODE_ENV = "test";
 const chai = require("chai");
 const expect = require("chai").expect;
 const request = require("supertest");
+const Server = require("../src/server");
+const ErrorDump = require("../src/error-dump");
 
-const database = require("../src/database");
-const server = require("../src/app");
-
-const userModel = require("../src/database/model/user.model").Model;
-const roleModel = require("../src/database/model/role.model").Model;
-const global = require("../src/global");
-
-const userAdmin = {
-    username: "admin",
-    password: "admin",
-    email: "admin@gmail.com",
-    fullname: "admin",
-    role: null,
-    accessToken: null,
-};
-const userBasic = {
-    username: "basic",
-    password: "basic",
-    email: "basic@gmail.com",
-    fullname: "basic",
-    role: null,
-    accessToken: null,
-};
-var sampleRoleData = {
-    name: "Sample role",
-    user: {
-        view: true,
-        create: false,
-        update: false,
-        delete: false,
-    },
-    masterData: {
-        view: false,
-        create: false,
-        update: false,
-        delete: false,
-    },
-};
-var roleList = [];
+var server = new Server();
+var serverApp = null;
 
 describe("TESTING /api/role", () => {
     // BEFORE TESTING
     before((done) => {
-        database
-            .connect()
-            .then(async () => {
-                // ROLE ADMIN
-                const adminRoleDoc = new roleModel({
-                    name: "Admin",
-                    user: {
-                        view: true,
-                        create: true,
-                        update: true,
-                        delete: true,
-                    },
-                    masterData: {
-                        view: true,
-                        create: true,
-                        update: true,
-                        delete: true,
-                    },
-                });
-                await adminRoleDoc.save();
-
-                // ROLE BASIC
-                const basicRoleDoc = new roleModel({
-                    name: "Basic",
-                    user: {
-                        view: true,
-                        create: false,
-                        update: false,
-                        delete: false,
-                    },
-                    masterData: {
-                        view: false,
-                        create: false,
-                        update: false,
-                        delete: false,
-                    },
-                });
-                await basicRoleDoc.save();
-
-                // USER ADMIN
-                userAdmin.role = adminRoleDoc._id;
-                const userAdminDoc = new userModel({
-                    ...userAdmin,
-                    password: await global.Hash(userAdmin.password),
-                });
-                await userAdminDoc.save();
-
-                // USER BASIC
-                userBasic.role = basicRoleDoc._id;
-                const userBasicDoc = new userModel({
-                    ...userBasic,
-                    password: await global.Hash(userBasic.password),
-                });
-                await userBasicDoc.save();
-
-                done();
-            })
+        server
+            .start()
+            .then(() => done())
             .catch((err) => done(err));
     });
 
@@ -113,7 +24,7 @@ describe("TESTING /api/role", () => {
             await userModel.collection.drop();
             await roleModel.collection.drop();
         } catch (err) {
-            global.DumpError(err, false);
+            ErrorDump(err, false);
             throw err;
         }
     });
@@ -122,9 +33,7 @@ describe("TESTING /api/role", () => {
     beforeEach(async () => {
         try {
             // ROLE ADMIN LOGIN
-            const adminLoginResponse = await request(server)
-                .post("/auth/login/test")
-                .send({ username: userAdmin.username, password: userAdmin.password });
+            const adminLoginResponse = await request(server).post("/auth/login/test").send({ username: userAdmin.username, password: userAdmin.password });
             if (adminLoginResponse.status !== 200 && adminLoginResponse.status !== 302) {
                 throw Error("Login failed");
             }
@@ -145,9 +54,7 @@ describe("TESTING /api/role", () => {
             userAdmin.accessToken = adminTokenData.accessToken;
 
             // ROLE BASIC LOGIN
-            const basicLoginResponse = await request(server)
-                .post("/auth/login/test")
-                .send({ username: userBasic.username, password: userBasic.password });
+            const basicLoginResponse = await request(server).post("/auth/login/test").send({ username: userBasic.username, password: userBasic.password });
             if (basicLoginResponse.status !== 200 && basicLoginResponse.status !== 302) {
                 throw Error("Login failed");
             }
@@ -167,7 +74,7 @@ describe("TESTING /api/role", () => {
             userBasic._id = basicTokenData.userData.userId;
             userBasic.accessToken = basicTokenData.accessToken;
         } catch (err) {
-            global.DumpError(err, false);
+            ErrorDump(err, false);
             throw err;
         }
     });

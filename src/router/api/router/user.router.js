@@ -5,6 +5,7 @@ const userController = require("../../../controller/user");
 const router = express.Router();
 
 router.post("/", validate(userDto.create), userController.create);
+router.post("/search", validate(userDto.search), userController.search);
 
 router.get("/", userController.getAll);
 router.get("/:userId", userController.get);

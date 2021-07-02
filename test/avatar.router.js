@@ -4,54 +4,26 @@ const chai = require("chai");
 const expect = require("chai").expect;
 const request = require("supertest");
 
-const database = require("../src/database");
-const server = require("../src/app");
-
-const userModel = require("../src/database/model/user.model").Model;
-const avatarModel = require("../src/database/model/avatar.model").Model;
-const roleModel = require("../src/database/model/role.model").Model;
+const Server = require("../src/server");
+const ErrorDump = require("../src/error-dump");
 const global = require("../src/global");
 
-const userAdmin = {
-    username: "admin",
-    password: "admin",
-    email: "admin@gmail.com",
-    fullname: "admin",
-    role: null,
-    accessToken: null,
-};
+var server = new Server();
 
 describe("TESTING /api/avatar", () => {
+    const database = new Database();
+
     // BEFORE TESTING
     before((done) => {
-        database
-            .connect()
+        server
+            .start()
             .then(async () => {
-                // ROLE ADMIN
-                const adminRoleDoc = new roleModel({
-                    name: "Admin",
-                    user: {
-                        view: true,
-                        create: true,
-                        update: true,
-                        delete: true,
-                    },
-                    masterData: {
-                        view: true,
-                        create: true,
-                        update: true,
-                        delete: true,
-                    },
-                });
-                await adminRoleDoc.save();
-
                 // DUMMY AVATAR
                 const avatarData = {
                     file: "data:image/jpeg;base64,hahahahahahahahahahhahahahahahahaha",
                     filename: "avatar.jpeg",
                 };
-                const prefix =
-                    avatarData.file.split(";base64,").length > 0 ? avatarData.file.split(";base64,")[0] : null;
+                const prefix = avatarData.file.split(";base64,").length > 0 ? avatarData.file.split(";base64,")[0] : null;
                 const ext = avatarData.file.match(/[^:/]\w+(?=;|,)/);
                 const avatarDoc = new avatarModel({
                     filename: avatarData.filename,
@@ -60,16 +32,6 @@ describe("TESTING /api/avatar", () => {
                     ext: ext && ext.length > 0 ? ext[0] : null,
                 });
                 await avatarDoc.save();
-
-                // USER ADMIN
-                userAdmin.avatar = avatarDoc._id;
-                userAdmin.role = adminRoleDoc._id;
-                const userAdminDoc = new userModel({
-                    ...userAdmin,
-                    password: await global.Hash(userAdmin.password),
-                    avatar: avatarDoc._id,
-                });
-                await userAdminDoc.save();
 
                 done();
             })
@@ -82,7 +44,7 @@ describe("TESTING /api/avatar", () => {
             await userModel.collection.drop();
             await roleModel.collection.drop();
         } catch (err) {
-            global.DumpError(err, false);
+            ErrorDump(err, false);
             throw err;
         }
     });
@@ -91,9 +53,7 @@ describe("TESTING /api/avatar", () => {
     beforeEach(async () => {
         try {
             // USER ADMIN LOGIN
-            const adminLoginResponse = await request(server)
-                .post("/auth/login/test")
-                .send({ username: userAdmin.username, password: userAdmin.password });
+            const adminLoginResponse = await request(server).post("/auth/login/test").send({ username: userAdmin.username, password: userAdmin.password });
             if (adminLoginResponse.status !== 200 && adminLoginResponse.status !== 302) {
                 throw Error("Login failed");
             }
@@ -113,7 +73,7 @@ describe("TESTING /api/avatar", () => {
             userAdmin._id = adminTokenData.userData.userId;
             userAdmin.accessToken = adminTokenData.accessToken;
         } catch (err) {
-            global.DumpError(err, false);
+            ErrorDump(err, false);
             throw err;
         }
     });

@@ -1,20 +1,20 @@
 const LocalStrategy = require("passport-local");
 const mongoose = require("mongoose");
-const global = require("../global");
-
-const userService = require("../service/user");
+const ErrorDump = require("../error-dump");
 
 function Initialize(passport) {
+    const authService = require("../service/auth");
+
     const authenticateCallback = async (username, password, done) => {
         try {
-            const user = await userService.authenticate(username, password);
+            const user = await authService.authenticate(username, password);
             if (!user) {
                 return done(null, false, { message: "User not found" });
             }
 
             return done(null, user);
         } catch (error) {
-            global.DumpError(error, false);
+            ErrorDump(error, false);
             return done(error);
         }
     };
@@ -24,7 +24,7 @@ function Initialize(passport) {
         done(null, user._id);
     });
     passport.deserializeUser(async (userId, done) => {
-        const user = await userService.get(userId);
+        const user = await authService.get(userId);
         if (!user) {
             return done(null, false, { message: "Deserialize User Error" });
         }

@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 
-const global = require("../global");
+const ErrorDump = require("../error-dump");
 const dro = require("../dro");
 
 class AvatarController {
@@ -21,7 +21,7 @@ class AvatarController {
             const imageBuffer = new Buffer(imageBase64, "base64");
             res.send(imageBuffer);
         } catch (err) {
-            global.DumpError(err);
+            ErrorDump(err);
             res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }
@@ -33,7 +33,7 @@ class AvatarController {
             }
             res.send(dro.response(avatarId));
         } catch (err) {
-            global.DumpError(err);
+            ErrorDump(err);
             res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }

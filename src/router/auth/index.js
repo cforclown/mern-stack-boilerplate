@@ -9,6 +9,7 @@ const router = express.Router();
 router.post("/register", validate(authDto.register), authController.register);
 router.post(
     "/login",
+    validate(authDto.login),
     passport.authenticate("local", {
         successRedirect: "/auth/login/verify",
         failureRedirect: "/auth/login/error",

@@ -1,43 +1,77 @@
-const config = require("../config");
 const mongoose = require("mongoose");
 
-
-
-async function connect() {
-    const dburl = `mongodb://${config.DB_HOST}:${config.DB_PORT}/${config.DB_NAME}`;
-    const options = {
-        auth: { authSource: "admin" },
-        user: config.DB_USERNAME,
-        pass: config.DB_PASSWORD,
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    };
-
-    if (config.NODE_ENV === "test") {
-        const Mockgoose = require("mockgoose").Mockgoose;
-        const mockgoose = new Mockgoose(mongoose);
-
-        await mockgoose.prepareStorage();
-
-        await mongoose.connect(dburl, {
-            useNewUrlParser: true,
-            useCreateIndex: true,
-            useUnifiedTopology: true,
-        });
+class Database {
+    constructor({ nodeEnv, host, port, username, password, dbName }) {
+        this.config = { nodeEnv, host, port, username, password, dbName };
     }
-    else 
-        await mongoose.connect(dburl, options);
+    async connect() {
+        const dburl = `mongodb://${this.config.host}:${this.config.port}/${this.config.dbName}`;
+        const options = {
+            auth: { authSource: "admin" },
+            user: this.config.username,
+            pass: this.config.password,
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        };
 
-    registerModels();
-}
-function close() {
-    return mongoose.disconnect();
-}
-function registerModels() {
-    require("./model/user.model").Model;
-    require("./model/role.model").Model;
-    require("./model/avatar.model").Model;
-    require("./model/token.model").Model;
+        if (this.config.nodeEnv === "test") {
+            const Mockgoose = require("mockgoose").Mockgoose;
+            const mockgoose = new Mockgoose(mongoose);
+
+            await mockgoose.prepareStorage();
+
+            await mongoose.connect(dburl, {
+                useNewUrlParser: true,
+                useCreateIndex: true,
+                useUnifiedTopology: true,
+            });
+
+            this.registerModels();
+            await this.createTestMockData();
+        } else {
+            await mongoose.connect(dburl, options);
+            this.registerModels();
+        }
+    }
+
+    close() {
+        if (NOVE) return mongoose.disconnect();
+    }
+
+    registerModels() {
+        require("./model/user.model").Model;
+        require("./model/role.model").Model;
+        require("./model/avatar.model").Model;
+        require("./model/token.model").Model;
+    }
+    async createTestMockData() {
+        try {
+            const mockData = require("../../test-mock-data");
+            const roleModel = mongoose.model("Role");
+            const avatarModel = mongoose.model("Avatar");
+            const userModel = mongoose.model("User");
+            if ((await roleModel.find({}).exec()).length === 0) {
+                for (const data of mockData.roles) {
+                    const doc = new roleModel(data);
+                    await doc.save();
+                }
+            }
+            if ((await avatarModel.find({}).exec()).length === 0) {
+                for (const data of mockData.avatars) {
+                    const doc = new avatarModel(data);
+                    await doc.save();
+                }
+            }
+            if ((await userModel.find({}).exec()).length === 0) {
+                for (const data of mockData.users) {
+                    const doc = new userModel(data);
+                    await doc.save();
+                }
+            }
+        } catch (err) {
+            console.log("CREATE TEST MOCK DATA FAILED !! " + err.message);
+        }
+    }
 }
 
-module.exports = { connect, close, registerModels };
+module.exports = Database;

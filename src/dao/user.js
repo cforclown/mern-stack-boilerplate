@@ -1,8 +1,12 @@
 const mongoose = require("mongoose");
+const userModel = mongoose.model("User");
+const roleModel = mongoose.model("Role");
 
 class UserDao {
     constructor() {
         this.create = this.create.bind(this);
+        this.search = this.search.bind(this);
+
         this.get = this.get.bind(this);
         this.authenticate = this.authenticate.bind(this);
         this.getAll = this.getAll.bind(this);
@@ -19,7 +23,7 @@ class UserDao {
     }
 
     async create({ username, hashedPassword, email, fullname, role }) {
-        const userDoc = new mongoose.model("User")({
+        let userDoc = new userModel({
             username,
             password: hashedPassword,
             email,
@@ -28,15 +32,15 @@ class UserDao {
         });
         await userDoc.save();
 
+        userDoc = await userModel.populate(userDoc, { path: "role", select: "name" });
         return userDoc;
     }
 
     get(userId) {
-        return mongoose.model("User").findById(userId).select("-password").populate("role").exec();
+        return userModel.findById(userId).select("-password").populate("role").exec();
     }
     authenticate(username, hashedPass) {
-        return mongoose
-            .model("User")
+        return userModel
             .findOne({
                 username: username,
                 password: hashedPass,
@@ -46,8 +50,7 @@ class UserDao {
             .exec();
     }
     getAll() {
-        return mongoose
-            .model("User")
+        return userModel
             .find({})
             .select("-password")
             .populate({
@@ -58,25 +61,56 @@ class UserDao {
             .exec();
     }
     find(query) {
-        return mongoose
-            .model("User")
+        return userModel
             .find({
                 fullname: { $regex: query, $options: "i" },
             })
             .select("-password")
             .populate({
                 path: "role",
-                select: "_id nama",
+                select: "_id name",
                 model: "Role",
             });
     }
+    search({ query, pagination }) {
+        return userModel
+            .find({
+                $and: [
+                    {
+                        $or: [
+                            {
+                                username: {
+                                    $regex: query,
+                                    $options: "i",
+                                },
+                            },
+                            {
+                                fullname: {
+                                    $regex: query,
+                                    $options: "i",
+                                },
+                            },
+                        ],
+                    },
+                ],
+            })
+            .populate({
+                path: "role",
+                select: "_id name",
+                model: "Role",
+            })
+            .select("-password")
+            .skip((pagination.page - 1) * pagination.limit)
+            .limit(pagination.limit)
+            .exec();
+    }
     async getUserPermissions(userId) {
-        const user = await mongoose.model("User").findById(userId).select("-password").populate("role").exec();
+        const user = await userModel.findById(userId).select("-password").populate("role").exec();
         return user ? user.role : null;
     }
 
     async update({ _id, role }) {
-        const result = await mongoose.model("User").updateOne({ _id: _id }, { $set: { role: role } });
+        const result = await userModel.updateOne({ _id: _id }, { $set: { role: role } });
         if (result.n === 0) {
             return null;
         }
@@ -88,7 +122,7 @@ class UserDao {
     }
 
     async delete(userId) {
-        const res = await mongoose.model("User").deleteOne({ _id: userId }).exec();
+        const res = await userModel.deleteOne({ _id: userId }).exec();
         if (res.n === 0) {
             return null;
         }
@@ -97,26 +131,29 @@ class UserDao {
 
     //#region PROFILE STUFF
     async updateProfile(userId, { email, fullname }) {
-        const result = await mongoose.model("User").updateOne({ _id: userId }, { $set: { email, fullname } });
+        const result = await userModel.updateOne({ _id: userId }, { $set: { email, fullname } });
         if (result.n === 0) {
             return null;
         }
 
-        return { _id: userId, email, fullname };
+        return { email, fullname };
     }
     async changeUsername(userId, username) {
-        const result = await mongoose.model("User").updateOne({ _id: userId }, { $set: { username } });
+        const result = await userModel.updateOne({ _id: userId }, { $set: { username } });
         if (result.n === 0) {
             return null;
         }
 
         return username;
     }
+
     async isUsernameAvailable(username, excludeUserId) {
-        const user = excludeUserId
-            ? await mongoose.model("User").findOne({ _id: { $ne: excludeUserId }, username: username })
-            : await mongoose.model("User").findOne({ username: username });
+        const user = excludeUserId ? await userModel.findOne({ _id: { $ne: excludeUserId }, username: username }) : await userModel.findOne({ username: username });
         return user ? false : true;
+    }
+    async isRoleValid(roleId) {
+        const role = await roleModel.findById(roleId).exec();
+        return role ? true : false;
     }
     //#endregion
 }

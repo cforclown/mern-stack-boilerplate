@@ -3,51 +3,51 @@ process.env.NODE_ENV = "test";
 const chai = require("chai");
 const expect = require("chai").expect;
 
-const database = require("../src/database");
+const config = require("../src/config");
+const Database = require("../src/database");
+const database = new Database({
+    nodeEnv: config.NODE_ENV,
+    host: config.DB_HOST,
+    port: config.DB_PORT,
+    username: config.DB_USERNAME,
+    password: config.DB_PASSWORD,
+    dbName: config.DB_NAME,
+});
+const mockData = require("../test-mock-data");
 
 describe("TESTING USER SERVICEs", () => {
     let userService = null;
     let createdUser = null;
-    let defaultRole = null;
-    let testRole = null;
 
     // BEFORE TESTING
     before((done) => {
         database
             .connect()
-            .then(async () => {
-                database.registerModels();
+            .then(() => {
                 userService = require("../src/service/user");
-
-                const mongoose = require("mongoose");
-                const roleModel = mongoose.model("Role");
-                const defaultRoleDoc = new roleModel({
-                    name: "normal",
-                    isDefaultNormal: true,
-                });
-                await defaultRoleDoc.save();
-                defaultRole = defaultRoleDoc;
-                const testRoleDoc = new roleModel({
-                    name: "test",
-                });
-                await testRoleDoc.save();
-                testRole = testRoleDoc;
-
                 done();
             })
             .catch((err) => done(err));
     });
-
     it("CREATE", (done) => {
         userService
             .create({
                 username: "create",
                 email: "create@gmail.com",
                 fullname: "create",
-                role: defaultRole._id,
+                role: mockData.roles[0]._id,
             })
             .then((user) => {
                 expect(user).to.be.an("object");
+                expect(user).to.have.property("_id");
+                expect(user).to.have.property("username");
+                expect(user).to.have.property("email");
+                expect(user).to.have.property("fullname");
+                expect(user).to.have.property("role");
+                expect(user.role).to.be.an("object");
+                expect(user.role).to.have.property("_id");
+                expect(user.role).to.have.property("name");
+
                 createdUser = user;
                 done();
             })
@@ -56,39 +56,23 @@ describe("TESTING USER SERVICEs", () => {
             });
     });
 
-    it("REGISTER", (done) => {
-        userService
-            .register({
-                username: "register",
-                password: "register",
-                confirmPassword: "register",
-                email: "register@gmail.com",
-                fullname: "register",
-            })
-            .then((user) => {
-                expect(user).to.be.an("object");
-                done();
-            })
-            .catch((err) => {
-                done(err.message);
-            });
-    });
     it("GET", (done) => {
+        if (!createdUser) {
+            done("Created user is undefined");
+        }
+
         userService
             .get(createdUser._id)
             .then((user) => {
                 expect(user).to.be.an("object");
-                done();
-            })
-            .catch((err) => {
-                done(err.message);
-            });
-    });
-    it("AUTHENTICATE", (done) => {
-        userService
-            .authenticate("create", "create_c")
-            .then((user) => {
-                expect(user).to.be.an("object");
+                expect(user).to.have.property("_id");
+                expect(user).to.have.property("username");
+                expect(user).to.have.property("email");
+                expect(user).to.have.property("fullname");
+                expect(user).to.have.property("role");
+                expect(user.role).to.be.an("object");
+                expect(user.role).to.have.property("_id");
+                expect(user.role).to.have.property("name");
                 done();
             })
             .catch((err) => {
@@ -96,10 +80,28 @@ describe("TESTING USER SERVICEs", () => {
             });
     });
     it("GET USER PERMISSIONS", (done) => {
+        if (!createdUser) {
+            done("Created user is undefined");
+        }
+
         userService
             .getUserPermissions(createdUser._id)
             .then((permissions) => {
                 expect(permissions).to.be.an("object");
+                expect(permissions).to.have.property("_id");
+                expect(permissions).to.have.property("name");
+                expect(permissions).to.have.property("user");
+                expect(permissions.user).to.be.a("object");
+                expect(permissions.user).to.have.property("view");
+                expect(permissions.user).to.have.property("create");
+                expect(permissions.user).to.have.property("update");
+                expect(permissions.user).to.have.property("delete");
+                expect(permissions).to.have.property("masterData");
+                expect(permissions.masterData).to.be.a("object");
+                expect(permissions.masterData).to.have.property("view");
+                expect(permissions.masterData).to.have.property("create");
+                expect(permissions.masterData).to.have.property("update");
+                expect(permissions.masterData).to.have.property("delete");
                 done();
             })
             .catch((err) => {
@@ -111,6 +113,15 @@ describe("TESTING USER SERVICEs", () => {
             .getAll()
             .then((userList) => {
                 expect(userList).to.be.an("array");
+                expect(userList[0]).to.be.an("object");
+                expect(userList[0]).to.have.property("_id");
+                expect(userList[0]).to.have.property("username");
+                expect(userList[0]).to.have.property("email");
+                expect(userList[0]).to.have.property("fullname");
+                expect(userList[0]).to.have.property("role");
+                expect(userList[0].role).to.be.an("object");
+                expect(userList[0].role).to.have.property("_id");
+                expect(userList[0].role).to.have.property("name");
                 done();
             })
             .catch((err) => {
@@ -122,6 +133,35 @@ describe("TESTING USER SERVICEs", () => {
             .find("cre")
             .then((userList) => {
                 expect(userList).to.be.an("array");
+                expect(userList[0]).to.be.an("object");
+                expect(userList[0]).to.have.property("_id");
+                expect(userList[0]).to.have.property("username");
+                expect(userList[0]).to.have.property("email");
+                expect(userList[0]).to.have.property("fullname");
+                expect(userList[0]).to.have.property("role");
+                expect(userList[0].role).to.be.an("object");
+                expect(userList[0].role).to.have.property("_id");
+                expect(userList[0].role).to.have.property("name");
+                done();
+            })
+            .catch((err) => {
+                done(err.message);
+            });
+    });
+    it("SEARCH", (done) => {
+        userService
+            .search({ query: "a", pagination: { page: 1, limit: 5 } })
+            .then((userList) => {
+                expect(userList).to.be.an("array");
+                expect(userList[0]).to.be.an("object");
+                expect(userList[0]).to.have.property("_id");
+                expect(userList[0]).to.have.property("username");
+                expect(userList[0]).to.have.property("email");
+                expect(userList[0]).to.have.property("fullname");
+                expect(userList[0]).to.have.property("role");
+                expect(userList[0].role).to.be.an("object");
+                expect(userList[0].role).to.have.property("_id");
+                expect(userList[0].role).to.have.property("name");
                 done();
             })
             .catch((err) => {
@@ -130,10 +170,22 @@ describe("TESTING USER SERVICEs", () => {
     });
 
     it("GET PROFILE", (done) => {
+        if (!createdUser) {
+            done("Created user is undefined");
+        }
+
         userService
             .getProfile(createdUser._id)
             .then((user) => {
                 expect(user).to.be.an("object");
+                expect(user).to.have.property("_id");
+                expect(user).to.have.property("username");
+                expect(user).to.have.property("email");
+                expect(user).to.have.property("fullname");
+                expect(user).to.have.property("role");
+                expect(user.role).to.be.an("object");
+                expect(user.role).to.have.property("_id");
+                expect(user.role).to.have.property("name");
                 done();
             })
             .catch((err) => {
@@ -141,22 +193,68 @@ describe("TESTING USER SERVICEs", () => {
             });
     });
     it("UPDATE PROFILE", (done) => {
+        if (!createdUser) {
+            done("Created user is undefined");
+        }
+
         userService
             .updateProfile(createdUser._id, { email: "create2@gmail.com", fullname: "update fullname" })
-            .then((user) => {
-                expect(user).to.be.an("object");
-                done();
+            .then((result) => {
+                expect(result).to.be.an("object");
+                expect(result).to.have.property("email");
+                expect(result).to.have.property("fullname");
+                userService
+                    .get(createdUser._id)
+                    .then((user) => {
+                        expect(user).to.be.an("object");
+                        expect(user).to.have.property("_id");
+                        expect(user).to.have.property("username");
+                        expect(user).to.have.property("email");
+                        expect(user.email).to.equal("create2@gmail.com");
+                        expect(user).to.have.property("fullname");
+                        expect(user.fullname).to.equal("update fullname");
+                        expect(user).to.have.property("role");
+                        expect(user.role).to.be.an("object");
+                        expect(user.role).to.have.property("_id");
+                        expect(user.role).to.have.property("name");
+                        done();
+                    })
+                    .catch((err) => {
+                        done(err.message);
+                    });
             })
             .catch((err) => {
                 done(err.message);
             });
     });
     it("CHANGE USERNAME", (done) => {
+        if (!createdUser) {
+            done("Created user is undefined");
+        }
+
         userService
             .changeUsername(createdUser._id, "new_username")
-            .then((user) => {
-                expect(user).to.be.an("string");
-                done();
+            .then((result) => {
+                expect(result).to.be.an("string");
+                expect(result).to.equal("new_username");
+                userService
+                    .get(createdUser._id)
+                    .then((user) => {
+                        expect(user).to.be.an("object");
+                        expect(user).to.have.property("_id");
+                        expect(user).to.have.property("username");
+                        expect(user.username).to.equal("new_username");
+                        expect(user).to.have.property("email");
+                        expect(user).to.have.property("fullname");
+                        expect(user).to.have.property("role");
+                        expect(user.role).to.be.an("object");
+                        expect(user.role).to.have.property("_id");
+                        expect(user.role).to.have.property("name");
+                        done();
+                    })
+                    .catch((err) => {
+                        done(err.message);
+                    });
             })
             .catch((err) => {
                 done(err.message);
@@ -164,14 +262,37 @@ describe("TESTING USER SERVICEs", () => {
     });
 
     it("UPDATE", (done) => {
+        if (!createdUser) {
+            done("Created user is undefined");
+        }
+
         userService
             .update({
                 _id: createdUser._id,
-                role: testRole._id,
+                role: mockData.roles[1]._id,
             })
             .then((result) => {
                 expect(result).to.be.an("object");
-                done();
+                expect(result).to.have.property("_id");
+                expect(result).to.have.property("role");
+                userService
+                    .get(createdUser._id)
+                    .then((user) => {
+                        expect(user).to.be.an("object");
+                        expect(user).to.have.property("_id");
+                        expect(user).to.have.property("username");
+                        expect(user).to.have.property("email");
+                        expect(user).to.have.property("fullname");
+                        expect(user).to.have.property("role");
+                        expect(user.role).to.be.an("object");
+                        expect(user.role).to.have.property("_id");
+                        expect(user.role).to.have.property("name");
+                        expect(user.role.name).to.equal(mockData.roles[1].name);
+                        done();
+                    })
+                    .catch((err) => {
+                        done(err.message);
+                    });
             })
             .catch((err) => {
                 done(err.message);
@@ -179,6 +300,10 @@ describe("TESTING USER SERVICEs", () => {
     });
 
     it("DELETE", (done) => {
+        if (!createdUser) {
+            done("Created user is undefined");
+        }
+
         userService
             .delete(createdUser._id.toString())
             .then((deletedUserId) => {

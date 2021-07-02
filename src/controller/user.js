@@ -1,5 +1,6 @@
 /* eslint-disable class-methods-use-this */
-const global = require("../global");
+
+const ErrorDump = require("../error-dump");
 const dro = require("../dro");
 
 class UserController {
@@ -7,6 +8,7 @@ class UserController {
         this.userService = userService;
 
         this.create = this.create.bind(this);
+        this.search = this.search.bind(this);
         this.get = this.get.bind(this);
         this.getAll = this.getAll.bind(this);
         this.getPermissions = this.getPermissions.bind(this);
@@ -17,6 +19,7 @@ class UserController {
         this.updateProfile = this.updateProfile.bind(this);
         this.changeUsername = this.changeUsername.bind(this);
     }
+
     async create(req, res) {
         try {
             if (!req.user.role.user.create) {
@@ -25,7 +28,16 @@ class UserController {
             const user = await this.userService.create(req.body);
             res.send(dro.response(user));
         } catch (err) {
-            global.DumpError(err);
+            ErrorDump(err);
+            res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
+        }
+    }
+    async search(req, res) {
+        try {
+            const users = await this.userService.search(req.body);
+            res.send(dro.response(users));
+        } catch (err) {
+            ErrorDump(err);
             res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }
@@ -35,30 +47,25 @@ class UserController {
             const user = await this.userService.get(req.params.userId);
             res.send(dro.response(user));
         } catch (err) {
-            global.DumpError(err);
+            ErrorDump(err);
             res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }
     async getAll(req, res) {
         try {
-            const userList =
-                req.query.search && req.query.search !== ""
-                    ? await this.userService.find(req.query.search)
-                    : await this.userService.getAll();
+            const userList = req.query.search && req.query.search !== "" ? await this.userService.find(req.query.search) : await this.userService.getAll();
             res.send(dro.response(userList));
         } catch (err) {
-            global.DumpError(err);
+            ErrorDump(err);
             res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }
     async getPermissions(req, res) {
         try {
-            const permissions = await this.userService.getUserPermissions(
-                req.params.userId ? req.params.userId : req.user.userId
-            );
+            const permissions = await this.userService.getUserPermissions(req.params.userId ? req.params.userId : req.user.userId);
             res.send(dro.response(permissions));
         } catch (err) {
-            global.DumpError(err);
+            ErrorDump(err);
             res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }
@@ -72,7 +79,7 @@ class UserController {
             const user = await this.userService.update(req.body);
             res.send(dro.response(user));
         } catch (err) {
-            global.DumpError(err);
+            ErrorDump(err);
             res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }
@@ -84,7 +91,7 @@ class UserController {
             const userId = await this.userService.delete(req.params.userId);
             res.send(dro.response(userId));
         } catch (err) {
-            global.DumpError(err);
+            ErrorDump(err);
             res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }
@@ -94,7 +101,7 @@ class UserController {
             const profile = await this.userService.getProfile(req.params.userId);
             res.send(dro.response(profile));
         } catch (err) {
-            global.DumpError(err);
+            ErrorDump(err);
             res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }
@@ -103,7 +110,7 @@ class UserController {
             const profile = await this.userService.updateProfile(req.user.userId, req.body);
             res.send(dro.response(profile));
         } catch (err) {
-            global.DumpError(err);
+            ErrorDump(err);
             res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }
@@ -112,7 +119,7 @@ class UserController {
             const userData = await this.userService.changeUsername(req.user.userId, req.body.username);
             res.send(dro.response(userData));
         } catch (err) {
-            global.DumpError(err);
+            ErrorDump(err);
             res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }

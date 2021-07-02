@@ -3,14 +3,13 @@ const ApiError = require("../error/api-error");
 const CryptoJS = require("crypto-js");
 
 class UserService {
-    constructor({ userDao, roleDao }) {
+    constructor({ userDao }) {
         this.userDao = userDao;
-        this.roleDao = roleDao;
 
         this.create = this.create.bind(this);
-        this.register = this.register.bind(this);
+        this.search = this.search.bind(this);
+
         this.get = this.get.bind(this);
-        this.authenticate = this.authenticate.bind(this);
         this.getAll = this.getAll.bind(this);
         this.find = this.find.bind(this);
         this.getUserPermissions = this.getUserPermissions.bind(this);
@@ -26,11 +25,10 @@ class UserService {
 
     async create({ username, email, fullname, role }) {
         if (!this.validateEmail(email)) {
-            throw ApiError.badRequest("Email not valid");
+            throw ApiError.badRequest("Invalid email address");
         }
-        const roleData = await this.roleDao.get(role);
-        if (!roleData) {
-            throw ApiError.badRequest("Role id is invalid");
+        if (!(await this.userDao.isRoleValid(role))) {
+            throw ApiError.badRequest("Invalid role id");
         }
 
         const hashedPassword = await CryptoJS.SHA512(username + "_c").toString(CryptoJS.enc.Hex);
@@ -38,41 +36,14 @@ class UserService {
 
         return user;
     }
-    async register({ username, password, confirmPassword, email, fullname }) {
-        if (password !== confirmPassword) {
-            throw ApiError.badRequest("Password and confirmation password is not match");
-        }
-        if (!this.validateEmail(email)) {
-            throw ApiError.badRequest("Email not valid");
-        }
-        if (!(await this.userDao.isUsernameAvailable(username))) {
-            throw ApiError.badRequest("Username is taken");
-        }
-
-        const role = await this.roleDao.getDefaultNormalRole();
-        if (!role) {
-            throw new Error("Normal role not found");
-        }
-
-        const hashedPassword = await CryptoJS.SHA512(password).toString(CryptoJS.enc.Hex);
-        const user = await this.userDao.create({ username, hashedPassword, email, fullname, role });
-
-        return user;
+    search({ query, pagination }) {
+        return this.userDao.search({ query, pagination });
     }
 
     async get(userId) {
         const user = await this.userDao.get(userId);
         if (!user) {
             throw ApiError.notFound("User not found");
-        }
-
-        return user;
-    }
-    async authenticate(username, password) {
-        const hashedPassword = await CryptoJS.SHA512(password).toString(CryptoJS.enc.Hex);
-        const user = await this.userDao.authenticate(username, hashedPassword);
-        if (!user) {
-            return null;
         }
 
         return user;
@@ -94,23 +65,12 @@ class UserService {
     }
 
     async update({ _id, role }) {
-        const user = await this.userDao.get(_id);
-        if (!user) {
-            throw ApiError.notFound("User not found");
+        if (!(await this.userDao.isRoleValid(role))) {
+            throw ApiError.badRequest("Invalid role id");
         }
 
-        if (role && !user.role.equals(role)) {
-            const roleData = await this.roleDao.get(role);
-            if (!roleData) {
-                throw ApiError.badRequest("Role id is invalid");
-            }
-            user.role = roleData._id;
-        }
-
-        return {
-            _id,
-            role,
-        };
+        const result = await this.userDao.update({ _id, role });
+        return result;
     }
 
     async delete(userId) {
@@ -131,15 +91,12 @@ class UserService {
         return user;
     }
     async updateProfile(userId, { email, fullname }) {
-        const user = await this.userDao.updateProfile(userId, { email, fullname });
-        if (!user) {
+        const result = await this.userDao.updateProfile(userId, { email, fullname });
+        if (!result) {
             throw ApiError.notFound("User not found");
         }
 
-        return {
-            email,
-            fullname,
-        };
+        return result;
     }
     async changeUsername(userId, username) {
         const user = await this.userDao.get(userId);
@@ -160,8 +117,7 @@ class UserService {
     }
 
     validateEmail(email) {
-        const emailre =
-            /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
+        const emailre = /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
 
         if (!email) return false;
         if (email.length > 254) return false;
@@ -181,6 +137,5 @@ class UserService {
 }
 
 const userDao = require("../dao/user");
-const roleDao = require("../dao/role");
-module.exports = new UserService({ userDao, roleDao });
+module.exports = new UserService({ userDao });
 //#endregion

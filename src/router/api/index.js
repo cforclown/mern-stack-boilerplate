@@ -1,7 +1,8 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const config = require("../../config");
-const global = require("../../global");
+const dro = require("../../dro");
+const ErrorDump = require("../../error-dump");
 
 const router = express.Router();
 
@@ -20,16 +21,15 @@ router.use(async (req, res, next) => {
             // TOKEN NOT VALID
             if (err) return res.sendStatus(401);
             // ROLE USER TIDAK VALID
-            if (!user.role)
-                return res.status(403).send(global.Response(null, "User ini tidak mempunyai attribute Role"));
+            if (!user.role) return res.status(403).send(dro.response(null, "User ini tidak mempunyai attribute Role"));
 
             req.user = user;
 
             next();
         });
     } catch (error) {
-        global.DumpError(error);
-        res.status(500).send(global.Response(null, error.message));
+        ErrorDump(error);
+        res.status(500).send(dro.response(null, error.message));
     }
 });
 

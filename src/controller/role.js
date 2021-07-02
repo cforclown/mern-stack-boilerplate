@@ -1,5 +1,6 @@
 /* eslint-disable class-methods-use-this */
-const global = require("../global");
+
+const ErrorDump = require("../error-dump");
 const dro = require("../dro");
 
 class RoleController {
@@ -22,7 +23,7 @@ class RoleController {
             const role = await this.roleService.create(req.body);
             res.send(dro.response(role));
         } catch (err) {
-            global.DumpError(err);
+            ErrorDump(err);
             res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }
@@ -32,19 +33,16 @@ class RoleController {
             const role = await this.roleService.get(req.params.roleId);
             res.send(dro.response(role));
         } catch (err) {
-            global.DumpError(err);
+            ErrorDump(err);
             res.status(500).send(dro.errorResponse(err.message));
         }
     }
     async getAll(req, res) {
         try {
-            const roleList =
-                req.query.search && req.query.search.trim() !== ""
-                    ? await this.roleService.find(req.query.search)
-                    : await this.roleService.getAll();
+            const roleList = req.query.search && req.query.search.trim() !== "" ? await this.roleService.find(req.query.search) : await this.roleService.getAll();
             res.send(dro.response(roleList));
         } catch (err) {
-            global.DumpError(err);
+            ErrorDump(err);
             res.status(500).send(dro.errorResponse(err.message));
         }
     }
@@ -53,7 +51,7 @@ class RoleController {
             const permissions = await this.roleService.getDefaultNormalRole(req.params.userId);
             res.send(dro.response(permissions));
         } catch (err) {
-            global.DumpError(err);
+            ErrorDump(err);
             res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }
@@ -67,7 +65,7 @@ class RoleController {
             const role = await this.roleService.update(req.body);
             res.send(dro.response(role));
         } catch (err) {
-            global.DumpError(err);
+            ErrorDump(err);
             res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }
@@ -81,7 +79,7 @@ class RoleController {
             const result = await this.roleService.delete(req.params.roleId);
             res.send(dro.response(result));
         } catch (err) {
-            global.DumpError(err);
+            ErrorDump(err);
             res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }

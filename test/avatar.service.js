@@ -2,8 +2,7 @@ process.env.NODE_ENV = "test";
 
 const chai = require("chai");
 const expect = require("chai").expect;
-
-const database = require("../src/database");
+const Server = require("../src/server");
 
 describe("TESTING AVATAR SERVICEs", () => {
     let avatarService = null;

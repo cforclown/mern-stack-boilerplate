@@ -1,8 +1,8 @@
-const global = require("../global");
+const ErrorDump = require("../error-dump");
 const dro = require("../dro");
 
 function apiErrorHandler(err, req, res, next) {
-    global.LogError(err);
+    ErrorDump(err);
 
     if (err instanceof Error) {
         return res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
