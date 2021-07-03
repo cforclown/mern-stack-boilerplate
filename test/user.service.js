@@ -29,6 +29,7 @@ describe("TESTING USER SERVICEs", () => {
             })
             .catch((err) => done(err));
     });
+
     it("CREATE", (done) => {
         userService
             .create({
@@ -111,17 +112,17 @@ describe("TESTING USER SERVICEs", () => {
     it("GET ALL", (done) => {
         userService
             .getAll()
-            .then((userList) => {
-                expect(userList).to.be.an("array");
-                expect(userList[0]).to.be.an("object");
-                expect(userList[0]).to.have.property("_id");
-                expect(userList[0]).to.have.property("username");
-                expect(userList[0]).to.have.property("email");
-                expect(userList[0]).to.have.property("fullname");
-                expect(userList[0]).to.have.property("role");
-                expect(userList[0].role).to.be.an("object");
-                expect(userList[0].role).to.have.property("_id");
-                expect(userList[0].role).to.have.property("name");
+            .then((users) => {
+                expect(users).to.be.an("array");
+                expect(users[0]).to.be.an("object");
+                expect(users[0]).to.have.property("_id");
+                expect(users[0]).to.have.property("username");
+                expect(users[0]).to.have.property("email");
+                expect(users[0]).to.have.property("fullname");
+                expect(users[0]).to.have.property("role");
+                expect(users[0].role).to.be.an("object");
+                expect(users[0].role).to.have.property("_id");
+                expect(users[0].role).to.have.property("name");
                 done();
             })
             .catch((err) => {

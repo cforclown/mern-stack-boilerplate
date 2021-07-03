@@ -1,4 +1,3 @@
-const ApiError = require("../error/api-error");
 const dro = require("../dro");
 
 function validate(schema) {

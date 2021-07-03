@@ -62,7 +62,7 @@ class AuthController {
     }
     async error(req, res) {
         // LOGIN FAILED
-        res.status(404).send(dro.response(null, "Authentication error"));
+        res.status(404).send(dro.errorResponse("Login failed. User not found"));
     }
     async refresh(req, res) {
         try {

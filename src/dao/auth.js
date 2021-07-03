@@ -8,9 +8,10 @@ class AuthDao {
     constructor() {
         this.register = this.register.bind(this);
         this.authenticate = this.authenticate.bind(this);
+        this.getUser = this.getUser.bind(this);
 
         this.isUsernameAvailable = this.isUsernameAvailable.bind(this);
-        this.getNormalRole = this.getNormalRole.bind(this);
+        this.getDefaultNormalRole = this.getDefaultNormalRole.bind(this);
 
         this.addToken = this.addToken.bind(this);
         this.isExists = this.isExists.bind(this);
@@ -32,6 +33,9 @@ class AuthDao {
         userDoc = await userModel.populate(userDoc, { path: "role", select: "name" });
         return userDoc;
     }
+    getUser(userId) {
+        return userModel.findById(userId).select("-password").populate("role").exec();
+    }
     authenticate(username, hashedPass) {
         return userModel
             .findOne({
@@ -47,8 +51,8 @@ class AuthDao {
         const user = excludeUserId ? await userModel.findOne({ _id: { $ne: excludeUserId }, username: username }) : await userModel.findOne({ username: username });
         return user ? false : true;
     }
-    getNormalRole() {
-        return roleModel.findOne({ name: "Normal" }).exec();
+    getDefaultNormalRole() {
+        return roleModel.findOne({ isDefaultNormal: true }).exec();
     }
 
     async addToken(userId, refreshToken) {

@@ -3,9 +3,19 @@ process.env.NODE_ENV = "test";
 const chai = require("chai");
 const expect = require("chai").expect;
 
-const database = require("../src/database");
+const config = require("../src/config");
+const Database = require("../src/database");
+const database = new Database({
+    nodeEnv: config.NODE_ENV,
+    host: config.DB_HOST,
+    port: config.DB_PORT,
+    username: config.DB_USERNAME,
+    password: config.DB_PASSWORD,
+    dbName: config.DB_NAME,
+});
+const mockData = require("../test-mock-data");
 
-describe("TESTING USER SERVICEs", () => {
+describe("TESTING ROLE SERVICEs", () => {
     let roleService = null;
     let createdRole = null;
 
@@ -13,8 +23,7 @@ describe("TESTING USER SERVICEs", () => {
     before((done) => {
         database
             .connect()
-            .then(async () => {
-                database.registerModels();
+            .then(() => {
                 roleService = require("../src/service/role");
                 done();
             })
@@ -23,9 +32,7 @@ describe("TESTING USER SERVICEs", () => {
 
     it("CREATE", (done) => {
         roleService
-            .create({
-                name: "test",
-            })
+            .create({ name: "test" })
             .then((role) => {
                 expect(role).to.be.an("object");
                 createdRole = role;
@@ -88,8 +95,12 @@ describe("TESTING USER SERVICEs", () => {
     it("DELETE", (done) => {
         roleService
             .delete(createdRole._id.toString())
-            .then((deletedId) => {
-                expect(deletedId).to.be.an("string");
+            .then((deletedRole) => {
+                expect(deletedRole).to.be.an("object");
+                expect(deletedRole).to.have.property("_id");
+                expect(deletedRole).to.have.property("name");
+                expect(deletedRole).to.have.property("user");
+                expect(deletedRole).to.have.property("masterData");
                 done();
             })
             .catch((err) => {

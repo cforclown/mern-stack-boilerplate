@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const ApiError = require("../error/api-error");
+const ApiError = require("../api-error");
 const CryptoJS = require("crypto-js");
 
 class UserService {

@@ -4,89 +4,61 @@ const chai = require("chai");
 const expect = require("chai").expect;
 const request = require("supertest");
 const Server = require("../src/server");
-const ErrorDump = require("../src/error-dump");
-
-var server = new Server();
-var serverApp = null;
+const mockData = require("../test-mock-data");
 
 describe("TESTING /api/role", () => {
-    // BEFORE TESTING
+    const server = new Server();
+
+    let adminUserToken = null;
+    let normalUserToken = null;
+    let createdRole = null;
+
     before((done) => {
         server
-            .start()
+            .startForTest()
             .then(() => done())
-            .catch((err) => done(err));
+            .catch((err) => done("An error occurred when starting the server"));
     });
 
-    // AFTER TESTING
-    after(async () => {
-        try {
-            await userModel.collection.drop();
-            await roleModel.collection.drop();
-        } catch (err) {
-            ErrorDump(err, false);
-            throw err;
-        }
-    });
-
-    // BEFORE EVERY TEST, LOGIN BEFORE EVERY TEST
+    // LOGIN BEFORE EVERY TEST
     beforeEach(async () => {
         try {
-            // ROLE ADMIN LOGIN
-            const adminLoginResponse = await request(server).post("/auth/login/test").send({ username: userAdmin.username, password: userAdmin.password });
-            if (adminLoginResponse.status !== 200 && adminLoginResponse.status !== 302) {
-                throw Error("Login failed");
-            }
+            let response = await request(server.app).post("/auth/login/test").send({ username: "admin", password: "root" });
+            expect(response.status).to.satisfy((status) => status == 200 || status == 302);
+            expect(response).to.contain.property("text");
 
-            expect(adminLoginResponse).to.contain.property("text");
+            let responseJson = JSON.parse(response.text);
+            expect(responseJson).to.be.an("object");
+            expect(responseJson).to.contain.property("data");
+            expect(responseJson.data).to.contain.property("userData");
+            expect(responseJson.data).to.contain.property("accessToken");
+            expect(responseJson.data).to.contain.property("refreshToken");
 
-            const adminLoginResponseBody = JSON.parse(adminLoginResponse.text);
+            adminUserToken = responseJson.data;
 
-            expect(adminLoginResponseBody).to.be.an("object");
-            expect(adminLoginResponseBody).to.contain.property("data");
+            response = await request(server.app).post("/auth/login/test").send({ username: "normal", password: "root" });
+            expect(response.status).to.satisfy((status) => status == 200 || status == 302);
+            expect(response).to.contain.property("text");
 
-            const adminTokenData = adminLoginResponseBody.data;
-            expect(adminTokenData).to.contain.property("accessToken");
-            expect(adminTokenData).to.contain.property("refreshToken");
-            expect(adminTokenData).to.contain.property("userData");
+            responseJson = JSON.parse(response.text);
+            expect(responseJson).to.be.an("object");
+            expect(responseJson).to.contain.property("data");
+            expect(responseJson.data).to.contain.property("userData");
+            expect(responseJson.data).to.contain.property("accessToken");
+            expect(responseJson.data).to.contain.property("refreshToken");
 
-            userAdmin._id = adminTokenData.userData.userId;
-            userAdmin.accessToken = adminTokenData.accessToken;
-
-            // ROLE BASIC LOGIN
-            const basicLoginResponse = await request(server).post("/auth/login/test").send({ username: userBasic.username, password: userBasic.password });
-            if (basicLoginResponse.status !== 200 && basicLoginResponse.status !== 302) {
-                throw Error("Login failed");
-            }
-
-            expect(basicLoginResponse).to.contain.property("text");
-
-            const basicLoginResponseBody = JSON.parse(basicLoginResponse.text);
-
-            expect(basicLoginResponseBody).to.be.an("object");
-            expect(basicLoginResponseBody).to.contain.property("data");
-
-            const basicTokenData = basicLoginResponseBody.data;
-            expect(basicTokenData).to.contain.property("accessToken");
-            expect(basicTokenData).to.contain.property("refreshToken");
-            expect(basicTokenData).to.contain.property("userData");
-
-            userBasic._id = basicTokenData.userData.userId;
-            userBasic.accessToken = basicTokenData.accessToken;
+            normalUserToken = responseJson.data;
         } catch (err) {
-            ErrorDump(err, false);
-            throw err;
+            console.log(err.message);
+            done("Login failed");
         }
     });
-    // AFTER EVERY TEST
-    // afterEach(done=>{
-    // })
 
     describe("[GET]", () => {
         it("GET ROLE LIST", (done) => {
-            request(server)
+            request(server.app)
                 .get("/api/role")
-                .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
+                .set({ Authorization: `Bearer ${adminUserToken.accessToken}` })
                 .end((err, response) => {
                     expect(response.status).to.equal(200);
                     expect(response).to.contain.property("text");
@@ -105,9 +77,9 @@ describe("TESTING /api/role", () => {
         });
 
         it("FIND ROLEs", (done) => {
-            request(server)
+            request(server.app)
                 .get("/api/role?search=admin")
-                .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
+                .set({ Authorization: `Bearer ${adminUserToken.accessToken}` })
                 .end((err, response) => {
                     expect(response.status).to.equal(200);
                     expect(response).to.contain.property("text");
@@ -124,9 +96,9 @@ describe("TESTING /api/role", () => {
         });
 
         it("GET ROLE BY ID", (done) => {
-            request(server)
-                .get("/api/role/" + userAdmin.role)
-                .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
+            request(server.app)
+                .get("/api/role/" + mockData.roles[0]._id)
+                .set({ Authorization: `Bearer ${adminUserToken.accessToken}` })
                 .end((err, response) => {
                     expect(response.status).to.equal(200);
                     expect(response).to.contain.property("text");
@@ -145,10 +117,10 @@ describe("TESTING /api/role", () => {
 
     describe("[POST]", () => {
         it("CREATE ROLE", (done) => {
-            request(server)
+            request(server.app)
                 .post("/api/role")
-                .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
-                .send(sampleRoleData)
+                .set({ Authorization: `Bearer ${adminUserToken.accessToken}` })
+                .send({ name: "test role" })
                 .end((err, response) => {
                     expect(response.status).to.equal(200);
                     expect(response).to.contain.property("text");
@@ -160,16 +132,16 @@ describe("TESTING /api/role", () => {
                     const data = body.data;
                     expect(data).to.be.an("object");
 
-                    sampleRoleData = data;
+                    createdRole = data;
 
                     done();
                 });
         });
 
         it("CREATE ROLE - BAD REQUEST", (done) => {
-            request(server)
+            request(server.app)
                 .post("/api/role")
-                .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
+                .set({ Authorization: `Bearer ${adminUserToken.accessToken}` })
                 .end((err, response) => {
                     expect(response.status).to.equal(400);
                     done();
@@ -177,10 +149,10 @@ describe("TESTING /api/role", () => {
         });
 
         it("CREATE ROLE - UNAUTHORIZED", (done) => {
-            request(server)
+            request(server.app)
                 .post("/api/role")
-                .set({ Authorization: `Bearer ${userBasic.accessToken}` })
-                .send(sampleRoleData)
+                .set({ Authorization: `Bearer ${normalUserToken.accessToken}` })
+                .send({ name: "test role" })
                 .end((err, response) => {
                     expect(response.status).to.equal(403);
                     done();
@@ -190,12 +162,14 @@ describe("TESTING /api/role", () => {
 
     describe("[PUT]", () => {
         it("UPDATE ROLE", (done) => {
-            request(server)
+            request(server.app)
                 .put("/api/role")
-                .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
+                .set({ Authorization: `Bearer ${adminUserToken.accessToken}` })
                 .send({
-                    ...sampleRoleData,
+                    _id: createdRole._id,
                     name: "update role name",
+                    user: { view: true, create: true, update: true, delete: true },
+                    masterData: { view: true, create: true, update: true, delete: true },
                 })
                 .end((err, response) => {
                     expect(response.status).to.equal(200);
@@ -213,9 +187,9 @@ describe("TESTING /api/role", () => {
         });
 
         it("UPDATE ROLE - BAD REQUEST", (done) => {
-            request(server)
+            request(server.app)
                 .put("/api/role")
-                .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
+                .set({ Authorization: `Bearer ${adminUserToken.accessToken}` })
                 .end((err, response) => {
                     expect(response.status).to.equal(400);
                     done();
@@ -223,12 +197,14 @@ describe("TESTING /api/role", () => {
         });
 
         it("UPDATE ROLE - UNAUTHORIZED", (done) => {
-            request(server)
+            request(server.app)
                 .put("/api/role")
-                .set({ Authorization: `Bearer ${userBasic.accessToken}` })
+                .set({ Authorization: `Bearer ${normalUserToken.accessToken}` })
                 .send({
-                    ...sampleRoleData,
+                    _id: createdRole._id,
                     name: "update role name",
+                    user: { view: true, create: true, update: true, delete: true },
+                    masterData: { view: true, create: true, update: true, delete: true },
                 })
                 .end((err, response) => {
                     expect(response.status).to.equal(403);
@@ -239,9 +215,9 @@ describe("TESTING /api/role", () => {
 
     describe("[DELETE]", () => {
         it("DELETE ROLE", (done) => {
-            request(server)
-                .delete("/api/role/" + sampleRoleData._id)
-                .set({ Authorization: `Bearer ${userAdmin.accessToken}` })
+            request(server.app)
+                .delete("/api/role/" + createdRole._id)
+                .set({ Authorization: `Bearer ${adminUserToken.accessToken}` })
                 .end((err, response) => {
                     expect(response.status).to.equal(200);
                     expect(response).to.contain.property("text");
@@ -251,7 +227,7 @@ describe("TESTING /api/role", () => {
                     expect(body).to.contain.property("data");
 
                     const data = body.data;
-                    expect(data).to.be.an("string");
+                    expect(data).to.be.an("object");
 
                     done();
                 });

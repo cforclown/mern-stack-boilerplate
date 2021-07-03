@@ -7,7 +7,8 @@
     "license": "MIT",
     "scripts": {
         "test": "mocha test/*.js --recursive --colors --exit --timeout 120000",
-        "test-watch": "mocha test/*.js --recursive --colors --timeout 120000 -w",
+        "test-routers": "mocha test/*.router.js --recursive --colors --timeout 120000 -w",
+        "test-services": "mocha test/*.service.js --recursive --colors --timeout 120000 -w",
         "test-coverage": "nyc npm test",
         "nodemon-dev": "set NODE_ENV=development&& nodemon src/index.js",
         "dev": "set NODE_ENV=development&& node src/index.js",

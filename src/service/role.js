@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const ApiError = require("../error/api-error");
+const ApiError = require("../api-error");
 
 class RoleService {
     constructor({ roleDao }) {
@@ -30,14 +30,6 @@ class RoleService {
         const roleList = await this.roleDao.find(query);
         return roleList;
     }
-    async getDefaultNormalRole() {
-        const role = await this.roleDao.getDefaultNormalRole();
-        if (!role) {
-            throw ApiError.notFound("Default normal role not found");
-        }
-
-        return role;
-    }
 
     async update({ _id, name, masterData, user }) {
         const res = await this.roleDao.update({ _id, name, masterData, user });
@@ -48,12 +40,12 @@ class RoleService {
     }
 
     async delete(roleId) {
-        const res = await this.roleDao.delete(roleId);
-        if (!res) {
+        const deletedRole = await this.roleDao.delete(roleId);
+        if (!deletedRole) {
             throw ApiError.notFound("DATA NOT FOUND");
         }
 
-        return roleId;
+        return deletedRole;
     }
 }
 

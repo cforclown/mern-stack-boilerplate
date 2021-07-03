@@ -26,7 +26,7 @@ describe("TESTING AUTH SERVICE", () => {
                 authService = require("../src/service/auth");
                 done();
             })
-            .catch((err) => done(err));
+            .catch((err) => done("An error occurred when starting the server"));
     });
 
     it("REGISTER", (done) => {
@@ -36,11 +36,11 @@ describe("TESTING AUTH SERVICE", () => {
 
         authService
             .register({
-                username: "register",
-                email: "register@gmail.com",
-                fullname: "register",
-                password: "register",
-                confirmPassword: "register",
+                username: "clown",
+                email: "clown@gmail.com",
+                fullname: "clown",
+                password: "clown",
+                confirmPassword: "clown",
             })
             .then((token) => {
                 expect(token).to.be.an("object");
@@ -71,8 +71,8 @@ describe("TESTING AUTH SERVICE", () => {
 
         authService
             .login({
-                username: "register",
-                password: "register",
+                username: "clown",
+                password: "clown",
             })
             .then((token) => {
                 expect(token).to.be.an("object");
@@ -80,7 +80,7 @@ describe("TESTING AUTH SERVICE", () => {
                 expect(token.userData).to.be.an("object");
                 expect(token.userData).to.contain.property("userId");
                 expect(token.userData).to.contain.property("username");
-                expect(token.userData.username).to.equals("register");
+                expect(token.userData.username).to.equals("clown");
                 expect(token.userData).to.contain.property("fullname");
                 expect(token.userData).to.contain.property("avatar");
                 expect(token.userData).to.contain.property("role");
@@ -116,7 +116,7 @@ describe("TESTING AUTH SERVICE", () => {
                 expect(token.userData).to.be.an("object");
                 expect(token.userData).to.contain.property("userId");
                 expect(token.userData).to.contain.property("username");
-                expect(token.userData.username).to.equals("register");
+                expect(token.userData.username).to.equals("clown");
                 expect(token.userData).to.contain.property("fullname");
                 expect(token.userData).to.contain.property("avatar");
                 expect(token.userData).to.contain.property("role");

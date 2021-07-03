@@ -2,17 +2,28 @@ process.env.NODE_ENV = "test";
 
 const chai = require("chai");
 const expect = require("chai").expect;
-const Server = require("../src/server");
+
+const config = require("../src/config");
+const Database = require("../src/database");
+const database = new Database({
+    nodeEnv: config.NODE_ENV,
+    host: config.DB_HOST,
+    port: config.DB_PORT,
+    username: config.DB_USERNAME,
+    password: config.DB_PASSWORD,
+    dbName: config.DB_NAME,
+});
+const mockData = require("../test-mock-data");
 
 describe("TESTING AVATAR SERVICEs", () => {
     let avatarService = null;
     let createdAvatarId = null;
+
     // BEFORE TESTING
     before((done) => {
         database
             .connect()
             .then(() => {
-                database.registerModels();
                 avatarService = require("../src/service/avatar");
                 done();
             })

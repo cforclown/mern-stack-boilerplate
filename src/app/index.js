@@ -15,10 +15,10 @@ const swaggerJsDoc = require("swagger-jsdoc");
 const swaggerUI = require("swagger-ui-express");
 const swaggerSchemas = require("../swagger-schemas");
 
-const initPassportConfig = require("../passport-config/passport-config");
-
 function App({ nodeEnv, port, appHost, sessionConfig }) {
     const app = express();
+
+    const initPassportConfig = require("../passport-config");
 
     //#region =========================== CONFIG MIDDLEWARE ===========================
     app.use(logger("dev"));

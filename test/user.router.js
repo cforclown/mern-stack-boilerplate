@@ -4,19 +4,17 @@ const chai = require("chai");
 const expect = require("chai").expect;
 const request = require("supertest");
 const Server = require("../src/server");
-const ErrorDump = require("../src/error-dump");
 const mockData = require("../test-mock-data");
 
-var server = new Server();
-
 describe("TESTING /api/user", () => {
+    const server = new Server();
     let adminUserToken = null;
     let normalUserToken = null;
     let createdUser = null;
 
     before((done) => {
         server
-            .start()
+            .startForTest()
             .then(() => done())
             .catch((err) => done("An error occurred when starting the server"));
     });
@@ -50,8 +48,8 @@ describe("TESTING /api/user", () => {
 
             normalUserToken = responseJson.data;
         } catch (err) {
-            ErrorDump(err, false);
-            throw err;
+            console.log(err.message);
+            done("Login failed");
         }
     });
 
@@ -68,8 +66,17 @@ describe("TESTING /api/user", () => {
                     expect(body).to.be.an("object");
                     expect(body).to.contain.property("data");
 
-                    const data = body.data;
-                    expect(data).to.be.an("array");
+                    const users = body.data;
+                    expect(users).to.be.an("array");
+                    expect(users[0]).to.be.an("object");
+                    expect(users[0]).to.have.property("_id");
+                    expect(users[0]).to.have.property("username");
+                    expect(users[0]).to.have.property("email");
+                    expect(users[0]).to.have.property("fullname");
+                    expect(users[0]).to.have.property("role");
+                    expect(users[0].role).to.be.an("object");
+                    expect(users[0].role).to.have.property("_id");
+                    expect(users[0].role).to.have.property("name");
 
                     done();
                 });
@@ -87,8 +94,17 @@ describe("TESTING /api/user", () => {
                     expect(body).to.be.an("object");
                     expect(body).to.contain.property("data");
 
-                    const data = body.data;
-                    expect(data).to.be.an("array");
+                    const users = body.data;
+                    expect(users).to.be.an("array");
+                    expect(users[0]).to.be.an("object");
+                    expect(users[0]).to.have.property("_id");
+                    expect(users[0]).to.have.property("username");
+                    expect(users[0]).to.have.property("email");
+                    expect(users[0]).to.have.property("fullname");
+                    expect(users[0]).to.have.property("role");
+                    expect(users[0].role).to.be.an("object");
+                    expect(users[0].role).to.have.property("_id");
+                    expect(users[0].role).to.have.property("name");
 
                     done();
                 });
@@ -106,8 +122,16 @@ describe("TESTING /api/user", () => {
                     expect(body).to.be.an("object");
                     expect(body).to.contain.property("data");
 
-                    const data = body.data;
-                    expect(data).to.be.an("object");
+                    const user = body.data;
+                    expect(user).to.be.an("object");
+                    expect(user).to.have.property("_id");
+                    expect(user).to.have.property("username");
+                    expect(user).to.have.property("email");
+                    expect(user).to.have.property("fullname");
+                    expect(user).to.have.property("role");
+                    expect(user.role).to.be.an("object");
+                    expect(user.role).to.have.property("_id");
+                    expect(user.role).to.have.property("name");
 
                     done();
                 });

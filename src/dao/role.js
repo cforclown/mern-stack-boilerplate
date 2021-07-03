@@ -1,4 +1,7 @@
 const mongoose = require("mongoose");
+const ApiError = require("../api-error");
+
+const roleModel = mongoose.model("Role");
 
 class RoleDao {
     constructor() {
@@ -10,7 +13,7 @@ class RoleDao {
     }
 
     async create({ name, masterData, user }) {
-        const roleDocument = new mongoose.model("Role")({
+        const roleDocument = new roleModel({
             name,
             masterData,
             user,
@@ -21,26 +24,31 @@ class RoleDao {
     }
 
     get(roleId) {
-        return mongoose.model("Role").findById(roleId).exec();
+        return roleModel.findById(roleId).exec();
     }
     getAll() {
-        return mongoose.model("Role").find({}).exec();
+        return roleModel.find({ isArchived: false }).exec();
     }
     find(query) {
-        return mongoose.model("Role").find({
+        return roleModel.find({
             name: {
                 $regex: query,
                 $options: "i",
             },
+            isArchived: false,
         });
-    }
-    getDefaultNormalRole() {
-        return mongoose.model("Role").findOne({ isDefaultNormal: true }).exec();
     }
 
     async update({ _id, name, masterData, user }) {
-        const res = await mongoose
-            .model("Role")
+        const role = await roleModel.findById(_id).exec();
+        if (!role) {
+            return null;
+        }
+        if (!role.editable) {
+            return null;
+        }
+
+        const res = await roleModel
             .updateOne(
                 { _id: _id },
                 {
@@ -57,12 +65,18 @@ class RoleDao {
     }
 
     async delete(roleId) {
-        const res = await mongoose.model("Role").findOneAndDelete({ _id: roleId }).exec();
-        if (res.n === 0) {
+        const role = await roleModel.findById(roleId).exec();
+        if (!role) {
+            return null;
+        }
+        if (!role.editable) {
             return null;
         }
 
-        return roleId;
+        role.isArchived = true;
+        await role.save();
+
+        return role;
     }
 }
 

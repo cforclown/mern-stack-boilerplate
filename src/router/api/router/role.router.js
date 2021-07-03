@@ -5,10 +5,10 @@ const roleDto = require("../../../dto/role");
 
 const Router = express.Router();
 
-Router.post("/", validate(roleDto), roleController.create);
+Router.post("/", validate(roleDto.create), roleController.create);
 Router.get("/", roleController.getAll);
 Router.get("/:roleId", roleController.get);
-Router.put("/", validate(roleDto), roleController.update);
+Router.put("/", validate(roleDto.update), roleController.update);
 Router.delete("/:roleId", roleController.delete);
 
 module.exports = Router;

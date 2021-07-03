@@ -1,7 +1,7 @@
 /* eslint-disable class-methods-use-this */
 const jwt = require("jsonwebtoken");
 const config = require("../config");
-const ApiError = require("../error/api-error");
+const ApiError = require("../api-error");
 const ErrorDump = require("../error-dump");
 const dro = require("../dro");
 const CryptoJS = require("crypto-js");
@@ -14,6 +14,8 @@ class AuthService {
         this.removeTokenTasks = [];
 
         this.register = this.register.bind(this);
+        this.authenticate = this.authenticate.bind(this);
+        this.getUser = this.getUser.bind(this);
         this.login = this.login.bind(this);
         this.verify = this.verify.bind(this);
         this.refresh = this.refresh.bind(this);
@@ -32,7 +34,7 @@ class AuthService {
             if (password !== confirmPassword) {
                 throw ApiError.badRequest("Confirmation password not match");
             }
-            const [isUsernameAvailable, normalRole] = await Promise.all([this.authDao.isUsernameAvailable(username), this.authDao.getNormalRole()]);
+            const [isUsernameAvailable, normalRole] = await Promise.all([this.authDao.isUsernameAvailable(username), this.authDao.getDefaultNormalRole()]);
             if (!isUsernameAvailable) {
                 throw ApiError.badRequest("Username is taken");
             }
@@ -63,6 +65,23 @@ class AuthService {
             this.startRemoveTokenTask(refreshToken);
 
             return this.createToken(signData, accessToken, refreshToken);
+        } catch (err) {
+            throw err;
+        }
+    }
+    async authenticate({ username, password }) {
+        try {
+            const hashedPassword = await this.hash(password);
+            const user = await this.authDao.authenticate(username, hashedPassword);
+            return user;
+        } catch (err) {
+            throw err;
+        }
+    }
+    async getUser(userId) {
+        try {
+            const user = await this.authDao.getUser(userId);
+            return user;
         } catch (err) {
             throw err;
         }

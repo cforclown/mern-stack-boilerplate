@@ -10,7 +10,6 @@ class RoleController {
         this.create = this.create.bind(this);
         this.get = this.get.bind(this);
         this.getAll = this.getAll.bind(this);
-        this.getDefaultNormalRole = this.getDefaultNormalRole.bind(this);
         this.update = this.update.bind(this);
         this.delete = this.delete.bind(this);
     }
@@ -44,15 +43,6 @@ class RoleController {
         } catch (err) {
             ErrorDump(err);
             res.status(500).send(dro.errorResponse(err.message));
-        }
-    }
-    async getDefaultNormalRole(req, res) {
-        try {
-            const permissions = await this.roleService.getDefaultNormalRole(req.params.userId);
-            res.send(dro.response(permissions));
-        } catch (err) {
-            ErrorDump(err);
-            res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }
 
