@@ -36,7 +36,19 @@ MERN stack boilerplate for dashboard app. Complete with login page with JWT auth
     ├── LICENSE
     └── README.md
 
-## Features
+## FEATURES
+
+-   **Beautiful Code**
+-   **Unit testing**
+-   **Dependency Injection**
+-   **Simplified Database Query**
+-   **Clear Structure** with different layers such as controllers, services, data access object, middlewares...
+-   **Easy Exception Handling**
+-   **Smart Validation**
+-   **Custom Validators**
+-   **API Documentation**
+-   **API Monitoring**
+-   **E2E API Testing**
 
 ## GETTING STARTED
 
