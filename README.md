@@ -8,8 +8,8 @@ MERN stack boilerplate for dashboard app. Complete with login page with JWT auth
     ├── app                     # Client app (ReactJS + Webpack)
     ├── dump-log                # generated on runtime (contain all error log per day)
     ├── public                  #
-    |   ├── prod                # client production build
-    |   └── staging             # client staging build
+    |   ├── prod                # client production build (generated after build)
+    |   └── staging             # client staging build (generated after build)
     ├── src                     # Source files
     |   ├── app                 # express app
     |   ├── console-log         # output log (with color)
@@ -75,7 +75,18 @@ REFRESH_TOKEN_SECRET=
 ACCESS_TOKEN_EXP_IN=3600
 ```
 
--   npm run migrate-dev
+-   'npm run migrate-dev', or 'npm run migrate-prod' for production (run only once)
+
+## DEVELOPMENT
+
+-   'npm run dev' or 'npm run watch-dev'
+
+## TESTING
+
+-   'npm run test', to run all test
+-   'npm run test-routers', to test only routers
+-   'npm run test-services', to test only all services
+-   'npm run test-coverage', to run coverage test
 
 ## SCRIPTS
 
