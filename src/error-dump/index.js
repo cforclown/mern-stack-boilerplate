@@ -5,7 +5,7 @@ const cl = require("../console-log");
 
 function ErrorDump(_err, saveLog = true) {
     if (config.NODE_ENV === "test") {
-        return;
+        saveLog = false;
     }
     if (!fs.existsSync(path.join(__dirname, "../../dump-log"))) {
         fs.mkdirSync(path.join(__dirname, "../../dump-log"));

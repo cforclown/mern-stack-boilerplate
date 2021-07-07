@@ -65,11 +65,22 @@ describe("TESTING ROLE SERVICEs", () => {
                 done(err.message);
             });
     });
-    it("FIND", (done) => {
+    it("SEARCH", (done) => {
         roleService
-            .find("tes")
-            .then((roleList) => {
-                expect(roleList).to.be.an("array");
+            .search({
+                query: "a",
+                pagination: {
+                    page: 1,
+                    limit: 10,
+                    sort: { by: "NAME", order: "ASC" },
+                },
+            })
+            .then((data) => {
+                expect(data).to.be.an("object");
+                expect(data).to.have.property("query");
+                expect(data).to.have.property("pagination");
+                expect(data).to.have.property("data");
+                expect(data.data).to.be.an("array");
                 done();
             })
             .catch((err) => {

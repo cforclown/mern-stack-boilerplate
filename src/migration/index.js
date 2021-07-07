@@ -1,7 +1,8 @@
-const mongoose = require("mongoose");
 const config = require("../config");
+const mongoose = require("mongoose");
 const Database = require("../database");
-const initialData = require("./mongodb-initial-static-attribute");
+const cl = require("../console-log");
+const initialData = require("./mongodb-initial-data");
 
 async function migrate() {
     try {
@@ -29,10 +30,19 @@ async function migrate() {
                 await doc.save();
             }
         }
-        console.log("MIGRATION COMPLETE!");
+        cl.LogBgSuccess("===================== !!! MIGRATION COMPLETE !!! ====================");
+        cl.LogBgSuccess("=====================================================================");
+        cl.LogSuccess("| 'npm run dev' or 'npm run watch-dev' to start development mode");
+        cl.LogSuccess("| 'npm run prod' to start production mode");
+        cl.LogSuccess("| 'npm run test' to run unit-testing");
+        cl.LogSuccess("| 'npm run test-coverage' unit-test report");
+        cl.LogSuccess("| 'npm run test-routers' to test routers only");
+        cl.LogSuccess("| 'npm run test-services' to test services only");
+        cl.LogBgSuccess("=====================================================================");
     } catch (err) {
-        throw err;
+        cl.LogError("!!! MIGRATION FAILED !!!");
+        cl.LogError(err.message);
     }
 }
 
-migrate();
+migrate().then(() => process.exit());

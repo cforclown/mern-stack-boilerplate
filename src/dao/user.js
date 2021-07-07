@@ -8,9 +8,7 @@ class UserDao {
         this.search = this.search.bind(this);
 
         this.get = this.get.bind(this);
-        this.authenticate = this.authenticate.bind(this);
         this.getAll = this.getAll.bind(this);
-        this.find = this.find.bind(this);
         this.getUserPermissions = this.getUserPermissions.bind(this);
 
         this.update = this.update.bind(this);
@@ -39,16 +37,6 @@ class UserDao {
     get(userId) {
         return userModel.findById(userId).select("-password").populate("role").exec();
     }
-    authenticate(username, hashedPass) {
-        return userModel
-            .findOne({
-                username: username,
-                password: hashedPass,
-            })
-            .select("-password")
-            .populate("role")
-            .exec();
-    }
     getAll() {
         return userModel
             .find({})
@@ -60,20 +48,14 @@ class UserDao {
             })
             .exec();
     }
-    find(query) {
-        return userModel
-            .find({
-                fullname: { $regex: query, $options: "i" },
-            })
-            .select("-password")
-            .populate({
-                path: "role",
-                select: "_id name",
-                model: "Role",
-            });
-    }
-    search({ query, pagination }) {
-        return userModel
+    async search({ query, pagination }) {
+        const sortBy = [];
+        if (pagination.sort.by === "USERNAME") {
+            sortBy.push(["username", pagination.sort.order === "ASC" ? 1 : -1]);
+        } else {
+            sortBy.push(["fullname", pagination.sort.order === "ASC" ? 1 : -1]);
+        }
+        const users = await userModel
             .find({
                 $and: [
                     {
@@ -102,7 +84,14 @@ class UserDao {
             .select("-password")
             .skip((pagination.page - 1) * pagination.limit)
             .limit(pagination.limit)
+            .sort([sortBy])
             .exec();
+
+        return {
+            query,
+            pagination,
+            data: users,
+        };
     }
     async getUserPermissions(userId) {
         const user = await userModel.findById(userId).select("-password").populate("role").exec();

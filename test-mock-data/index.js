@@ -3,17 +3,30 @@ const mongoose = require("mongoose");
 const roles = [
     {
         _id: mongoose.Types.ObjectId(),
+        name: "Super Admin",
+        user: { view: true, create: true, update: true, delete: true },
+        masterData: { view: true, create: true, update: true, delete: true },
+        desc: "Super admin role. Allowed to view, create, modify and delete data. Default. This role cannot be deleted",
+        isDefaultNormal: false,
+        editable: false,
+    },
+    {
+        _id: mongoose.Types.ObjectId(),
         name: "Admin",
         user: { view: true, create: true, update: true, delete: true },
         masterData: { view: true, create: true, update: true, delete: true },
+        desc: "Admin role. Allowed to view, create, modify and delete data. Default. This role cannot be deleted",
         isDefaultNormal: false,
+        editable: false,
     },
     {
         _id: mongoose.Types.ObjectId(),
         name: "Normal",
         user: { view: true, create: false, update: false, delete: false },
         masterData: { view: true, create: false, update: false, delete: false },
+        desc: "Normal role. Only allowed to view data. Default. This role cannot be deleted",
         isDefaultNormal: true,
+        editable: false,
     },
 ];
 const avatars = [
@@ -33,7 +46,7 @@ const users = [
         email: "admin@mail.com",
         fullname: "Admin",
         avatar: avatars[0]._id,
-        role: roles[0]._id,
+        role: roles[1]._id,
     },
     {
         _id: mongoose.Types.ObjectId(),
@@ -42,7 +55,7 @@ const users = [
         email: "normal@mail.com",
         fullname: "Normal",
         avatar: avatars[0]._id,
-        role: roles[1]._id,
+        role: roles[2]._id,
     },
 ];
 

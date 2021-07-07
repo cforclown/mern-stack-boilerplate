@@ -55,7 +55,7 @@ describe("TESTING /api/role", () => {
     });
 
     describe("[GET]", () => {
-        it("GET ROLE LIST", (done) => {
+        it("GET ALL ROLE", (done) => {
             request(server.app)
                 .get("/api/role")
                 .set({ Authorization: `Bearer ${adminUserToken.accessToken}` })
@@ -76,10 +76,11 @@ describe("TESTING /api/role", () => {
                 });
         });
 
-        it("FIND ROLEs", (done) => {
+        it("SEARCH ROLEs", (done) => {
             request(server.app)
-                .get("/api/role?search=admin")
+                .post("/api/role/search")
                 .set({ Authorization: `Bearer ${adminUserToken.accessToken}` })
+                .send({ query: "a" })
                 .end((err, response) => {
                     expect(response.status).to.equal(200);
                     expect(response).to.contain.property("text");
@@ -89,7 +90,11 @@ describe("TESTING /api/role", () => {
                     expect(body).to.contain.property("data");
 
                     const data = body.data;
-                    expect(data).to.be.an("array");
+                    expect(data).to.be.an("object");
+                    expect(data).to.have.property("query");
+                    expect(data).to.have.property("pagination");
+                    expect(data).to.have.property("data");
+                    expect(data.data).to.be.an("array");
 
                     done();
                 });

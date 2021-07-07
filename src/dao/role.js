@@ -29,14 +29,25 @@ class RoleDao {
     getAll() {
         return roleModel.find({ isArchived: false }).exec();
     }
-    find(query) {
-        return roleModel.find({
-            name: {
-                $regex: query,
-                $options: "i",
-            },
-            isArchived: false,
-        });
+    async search({ query, pagination }) {
+        const roles = await roleModel
+            .find({
+                name: {
+                    $regex: query,
+                    $options: "i",
+                },
+                isArchived: false,
+            })
+            .skip((pagination.page - 1) * pagination.limit)
+            .limit(pagination.limit)
+            .sort([["name", 1]])
+            .exec();
+
+        return {
+            query,
+            pagination,
+            data: roles,
+        };
     }
 
     async update({ _id, name, masterData, user }) {

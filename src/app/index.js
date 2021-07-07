@@ -104,33 +104,33 @@ function App({ nodeEnv, port, appHost, sessionConfig }) {
 
     // HOME
     if (nodeEnv === "development") {
-        if (fs.existsSync(path.join(__dirname, "../app/staging"))) {
-            app.use(express.static(path.join(__dirname, "../app/staging")));
+        if (fs.existsSync(path.join(__dirname, "../../public/staging"))) {
+            app.use(express.static(path.join(__dirname, "../../public/staging")));
             app.get("/*", (req, res) => {
-                res.sendFile(path.join(__dirname, "../app/staging/index.html"));
+                res.sendFile(path.join(__dirname, "../../public/staging/index.html"));
             });
         } else {
-            app.use(express.static(path.join(__dirname, "../public")));
+            app.use(express.static(path.join(__dirname, "../../public/default")));
             app.get("/*", (req, res) => {
-                res.sendFile(path.join(__dirname, "../public/index.html"));
+                res.sendFile(path.join(__dirname, "../../public/default/index.html"));
             });
         }
     } else if (nodeEnv === "production") {
-        if (fs.existsSync(path.join(__dirname, "../app/build"))) {
-            app.use(express.static(path.join(__dirname, "../app/build")));
+        if (fs.existsSync(path.join(__dirname, "../../public/production"))) {
+            app.use(express.static(path.join(__dirname, "../../public/production")));
             app.get("/*", (req, res) => {
-                res.sendFile(path.join(__dirname, "../app/build/index.html"));
+                res.sendFile(path.join(__dirname, "../../public/production/index.html"));
             });
         } else {
-            app.use(express.static(path.join(__dirname, "../public")));
+            app.use(express.static(path.join(__dirname, "../../public/default")));
             app.get("/*", (req, res) => {
-                res.sendFile(path.join(__dirname, "../public/index.html"));
+                res.sendFile(path.join(__dirname, "../../public/default/index.html"));
             });
         }
     } else {
-        app.use(express.static(path.join(__dirname, "../public")));
+        app.use(express.static(path.join(__dirname, "../../public/default")));
         app.get("/*", (req, res) => {
-            res.sendFile(path.join(__dirname, "../public/index.html"));
+            res.sendFile(path.join(__dirname, "../../public/default/index.html"));
         });
     }
     //#endregion

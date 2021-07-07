@@ -40,9 +40,55 @@ module.exports = {
             file: { type: "string" },
         },
     },
-    roleData: {
+
+    searchRole: {
         type: "object",
         properties: {
+            query: { type: "string" },
+            pagination: {
+                type: "object",
+                properties: {
+                    page: { type: "boolean", default: false },
+                    limit: { type: "boolean", default: false },
+                    sort: {
+                        type: "object",
+                        properties: {
+                            by: { type: "string", default: "NAME" },
+                            order: { type: "string", default: "ASC" },
+                        },
+                    },
+                },
+            },
+        },
+    },
+    createRole: {
+        type: "object",
+        properties: {
+            name: { type: "string" },
+            masterData: {
+                type: "object",
+                properties: {
+                    view: { type: "boolean", default: false },
+                    create: { type: "boolean", default: false },
+                    update: { type: "boolean", default: false },
+                    delete: { type: "boolean", default: false },
+                },
+            },
+            user: {
+                type: "object",
+                properties: {
+                    view: { type: "boolean", default: true },
+                    create: { type: "boolean", default: false },
+                    update: { type: "boolean", default: false },
+                    delete: { type: "boolean", default: false },
+                },
+            },
+        },
+    },
+    updateRole: {
+        type: "object",
+        properties: {
+            _id: { type: "string" },
             name: { type: "string" },
             masterData: {
                 type: "object",

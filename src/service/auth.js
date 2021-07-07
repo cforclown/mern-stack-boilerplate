@@ -4,7 +4,7 @@ const config = require("../config");
 const ApiError = require("../api-error");
 const ErrorDump = require("../error-dump");
 const dro = require("../dro");
-const CryptoJS = require("crypto-js");
+const hash = require("../helper").Hash;
 
 class AuthService {
     constructor({ authDao, accessTokenExpIn, refreshTokenExpIn }) {
@@ -23,7 +23,6 @@ class AuthService {
 
         this.createSignData = this.createSignData.bind(this);
         this.createToken = this.createToken.bind(this);
-        this.hash = this.hash.bind(this);
 
         this.startRemoveTokenTask = this.startRemoveTokenTask.bind(this);
         this.stopRemoveTokenTask = this.stopRemoveTokenTask.bind(this);
@@ -42,7 +41,7 @@ class AuthService {
                 throw ApiError.internal("Normal role not found");
             }
 
-            const hashedPassword = await this.hash(password);
+            const hashedPassword = await hash(password);
             const user = await this.authDao.register({
                 username,
                 hashedPassword,
@@ -71,7 +70,7 @@ class AuthService {
     }
     async authenticate({ username, password }) {
         try {
-            const hashedPassword = await this.hash(password);
+            const hashedPassword = await hash(password);
             const user = await this.authDao.authenticate(username, hashedPassword);
             return user;
         } catch (err) {
@@ -88,7 +87,7 @@ class AuthService {
     }
     async login({ username, password }) {
         try {
-            const hashedPassword = await this.hash(password);
+            const hashedPassword = await hash(password);
             const user = await this.authDao.authenticate(username, hashedPassword);
             if (!user) {
                 throw ApiError.notFound("Login failed. User not found");
@@ -196,9 +195,6 @@ class AuthService {
             accessToken: _accessToken,
             refreshToken: _refreshToken,
         };
-    }
-    hash(str) {
-        return CryptoJS.SHA512(str).toString(CryptoJS.enc.Hex);
     }
 
     startRemoveTokenTask(refreshToken) {

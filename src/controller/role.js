@@ -8,6 +8,7 @@ class RoleController {
         this.roleService = roleService;
 
         this.create = this.create.bind(this);
+        this.search = this.search.bind(this);
         this.get = this.get.bind(this);
         this.getAll = this.getAll.bind(this);
         this.update = this.update.bind(this);
@@ -33,16 +34,25 @@ class RoleController {
             res.send(dro.response(role));
         } catch (err) {
             ErrorDump(err);
-            res.status(500).send(dro.errorResponse(err.message));
+            res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }
     async getAll(req, res) {
         try {
-            const roleList = req.query.search && req.query.search.trim() !== "" ? await this.roleService.find(req.query.search) : await this.roleService.getAll();
-            res.send(dro.response(roleList));
+            const roles = await this.roleService.getAll();
+            res.send(dro.response(roles));
         } catch (err) {
             ErrorDump(err);
-            res.status(500).send(dro.errorResponse(err.message));
+            res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
+        }
+    }
+    async search(req, res) {
+        try {
+            const data = await this.roleService.search(req.body);
+            res.send(dro.response(data));
+        } catch (err) {
+            ErrorDump(err);
+            res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }
 

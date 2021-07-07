@@ -6,11 +6,13 @@
     "author": "Hafis Alrizal",
     "license": "MIT",
     "scripts": {
+        "migrate-dev": "set NODE_ENV=development&& node src/migration/index.js",
+        "migrate-prod": "set NODE_ENV=production&& node src/migration/index.js",
         "test": "mocha test/*.js --recursive --colors --exit --timeout 120000",
         "test-routers": "mocha test/*.router.js --recursive --colors --timeout 120000 -w",
         "test-services": "mocha test/*.service.js --recursive --colors --timeout 120000 -w",
         "test-coverage": "nyc npm test",
-        "nodemon-dev": "set NODE_ENV=development&& nodemon src/index.js",
+        "watch-dev": "set NODE_ENV=development&& nodemon src/index.js",
         "dev": "set NODE_ENV=development&& node src/index.js",
         "prod": "set NODE_ENV=production&& node src/index.js"
     },
@@ -40,6 +42,7 @@
         "eslint-config-airbnb-base": "^14.2.1",
         "eslint-plugin-import": "^2.23.4",
         "mocha": "^8.3.0",
+        "nodemon": "^2.0.9",
         "nyc": "^15.1.0",
         "supertest": "^6.1.3"
     },

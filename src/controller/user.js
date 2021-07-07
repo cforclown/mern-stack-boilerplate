@@ -32,15 +32,6 @@ class UserController {
             res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
         }
     }
-    async search(req, res) {
-        try {
-            const users = await this.userService.search(req.body);
-            res.send(dro.response(users));
-        } catch (err) {
-            ErrorDump(err);
-            res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
-        }
-    }
 
     async get(req, res) {
         try {
@@ -53,8 +44,17 @@ class UserController {
     }
     async getAll(req, res) {
         try {
-            const userList = req.query.search && req.query.search !== "" ? await this.userService.find(req.query.search) : await this.userService.getAll();
-            res.send(dro.response(userList));
+            const users = await this.userService.getAll();
+            res.send(dro.response(users));
+        } catch (err) {
+            ErrorDump(err);
+            res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));
+        }
+    }
+    async search(req, res) {
+        try {
+            const data = await this.userService.search(req.body);
+            res.send(dro.response(data));
         } catch (err) {
             ErrorDump(err);
             res.status(err.status ? err.status : 500).send(dro.errorResponse(err.message));

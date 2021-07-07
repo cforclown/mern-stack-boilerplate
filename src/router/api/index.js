@@ -6,9 +6,9 @@ const ErrorDump = require("../../error-dump");
 
 const router = express.Router();
 
-const userRouter = require("./router/user.router");
-const avatarRouter = require("./router/avatar.router");
-const roleRouter = require("./router/role.router");
+const userRouter = require("./router/user");
+const avatarRouter = require("./router/avatar");
+const roleRouter = require("./router/role");
 
 router.use(async (req, res, next) => {
     try {

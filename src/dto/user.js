@@ -3,10 +3,30 @@ const joi = require("joi");
 module.exports = {
     search: joi.object({
         query: joi.string().required(),
-        pagination: joi.object({
-            page: joi.number().required(),
-            limit: joi.number().required(),
-        }),
+        pagination: joi
+            .object({
+                page: joi.number().required(),
+                limit: joi.number().required(),
+                sort: joi
+                    .object({
+                        by: joi.string().valid("USERNAME", "FULLNAME").required(),
+                        order: joi.string().valid("ASC", "DESC").required(),
+                    })
+                    .allow(null)
+                    .default({
+                        by: "USERNAME",
+                        order: "ASC",
+                    }),
+            })
+            .allow(null)
+            .default({
+                page: 1,
+                limit: 10,
+                sort: {
+                    by: "USERNAME",
+                    order: "ASC",
+                },
+            }),
     }),
     create: joi.object({
         _id: joi.string().allow(null).default(null),

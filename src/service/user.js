@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const ApiError = require("../api-error");
-const CryptoJS = require("crypto-js");
+const hash = require("../helper").Hash;
 
 class UserService {
     constructor({ userDao }) {
@@ -11,7 +11,6 @@ class UserService {
 
         this.get = this.get.bind(this);
         this.getAll = this.getAll.bind(this);
-        this.find = this.find.bind(this);
         this.getUserPermissions = this.getUserPermissions.bind(this);
 
         this.update = this.update.bind(this);
@@ -31,7 +30,7 @@ class UserService {
             throw ApiError.badRequest("Invalid role id");
         }
 
-        const hashedPassword = await CryptoJS.SHA512(username + "_c").toString(CryptoJS.enc.Hex);
+        const hashedPassword = await hash(username + "_c");
         const user = await this.userDao.create({ username, hashedPassword, email, fullname, role });
 
         return user;
@@ -52,8 +51,8 @@ class UserService {
         const userList = await this.userDao.getAll();
         return userList;
     }
-    async find(query) {
-        const userList = await this.userDao.find(query);
+    async search({ query, pagination }) {
+        const userList = await this.userDao.search({ query, pagination });
         return userList;
     }
     async getUserPermissions(userId) {

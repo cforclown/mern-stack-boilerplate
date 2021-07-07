@@ -1,9 +1,0 @@
-const ActionTypes={
-    SET_SESSION:'SET_SESSION',
-    DELETE_SESSION:'DELETE_SESSION',
-    SET_USER_AVATAR:'SET_USER_AVATAR',
-    SET_USER_DATA:'SET_USER_DATA',
-    SET_USER_ROLE:'SET_USER_ROLE',
-}
-
-export default ActionTypes

@@ -67,6 +67,11 @@ const roleSchema = new mongoose.Schema({
             delete: false,
         },
     },
+    desc: {
+        type: String,
+        required: false,
+        default: "",
+    },
     isDefaultNormal: {
         type: Boolean,
         required: false,

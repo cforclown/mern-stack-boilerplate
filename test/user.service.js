@@ -129,40 +129,34 @@ describe("TESTING USER SERVICEs", () => {
                 done(err.message);
             });
     });
-    it("FIND", (done) => {
-        userService
-            .find("cre")
-            .then((userList) => {
-                expect(userList).to.be.an("array");
-                expect(userList[0]).to.be.an("object");
-                expect(userList[0]).to.have.property("_id");
-                expect(userList[0]).to.have.property("username");
-                expect(userList[0]).to.have.property("email");
-                expect(userList[0]).to.have.property("fullname");
-                expect(userList[0]).to.have.property("role");
-                expect(userList[0].role).to.be.an("object");
-                expect(userList[0].role).to.have.property("_id");
-                expect(userList[0].role).to.have.property("name");
-                done();
-            })
-            .catch((err) => {
-                done(err.message);
-            });
-    });
     it("SEARCH", (done) => {
         userService
-            .search({ query: "a", pagination: { page: 1, limit: 5 } })
-            .then((userList) => {
-                expect(userList).to.be.an("array");
-                expect(userList[0]).to.be.an("object");
-                expect(userList[0]).to.have.property("_id");
-                expect(userList[0]).to.have.property("username");
-                expect(userList[0]).to.have.property("email");
-                expect(userList[0]).to.have.property("fullname");
-                expect(userList[0]).to.have.property("role");
-                expect(userList[0].role).to.be.an("object");
-                expect(userList[0].role).to.have.property("_id");
-                expect(userList[0].role).to.have.property("name");
+            .search({
+                query: "a",
+                pagination: {
+                    page: 1,
+                    limit: 10,
+                    sort: {
+                        by: "FULLNAME",
+                        order: "ASC",
+                    },
+                },
+            })
+            .then((data) => {
+                expect(data).to.be.an("object");
+                expect(data).to.have.property("query");
+                expect(data).to.have.property("pagination");
+                expect(data).to.have.property("data");
+                expect(data.data).to.be.an("array");
+                expect(data.data[0]).to.be.an("object");
+                expect(data.data[0]).to.have.property("_id");
+                expect(data.data[0]).to.have.property("username");
+                expect(data.data[0]).to.have.property("email");
+                expect(data.data[0]).to.have.property("fullname");
+                expect(data.data[0]).to.have.property("role");
+                expect(data.data[0].role).to.be.an("object");
+                expect(data.data[0].role).to.have.property("_id");
+                expect(data.data[0].role).to.have.property("name");
                 done();
             })
             .catch((err) => {

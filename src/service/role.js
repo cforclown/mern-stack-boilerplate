@@ -26,9 +26,8 @@ class RoleService {
         const roleList = await this.roleDao.getAll();
         return roleList;
     }
-    async find(query) {
-        const roleList = await this.roleDao.find(query);
-        return roleList;
+    search({ query, pagination }) {
+        return this.roleDao.search({ query, pagination });
     }
 
     async update({ _id, name, masterData, user }) {

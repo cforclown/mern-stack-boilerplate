@@ -82,34 +82,6 @@ describe("TESTING /api/user", () => {
                 });
         });
 
-        it("FIND USERs", (done) => {
-            request(server.app)
-                .get("/api/user?search=admin")
-                .set({ Authorization: `Bearer ${adminUserToken.accessToken}` })
-                .end((err, response) => {
-                    expect(response.status).to.equal(200);
-                    expect(response).to.contain.property("text");
-
-                    const body = JSON.parse(response.text);
-                    expect(body).to.be.an("object");
-                    expect(body).to.contain.property("data");
-
-                    const users = body.data;
-                    expect(users).to.be.an("array");
-                    expect(users[0]).to.be.an("object");
-                    expect(users[0]).to.have.property("_id");
-                    expect(users[0]).to.have.property("username");
-                    expect(users[0]).to.have.property("email");
-                    expect(users[0]).to.have.property("fullname");
-                    expect(users[0]).to.have.property("role");
-                    expect(users[0].role).to.be.an("object");
-                    expect(users[0].role).to.have.property("_id");
-                    expect(users[0].role).to.have.property("name");
-
-                    done();
-                });
-        });
-
         it("GET USER BY ID", (done) => {
             request(server.app)
                 .get("/api/user/" + mockData.users[0]._id)
@@ -181,6 +153,38 @@ describe("TESTING /api/user", () => {
 
                     createdUser = data;
 
+                    done();
+                });
+        });
+
+        it("SEARCH USERs", (done) => {
+            request(server.app)
+                .post("/api/user/search")
+                .set({ Authorization: `Bearer ${adminUserToken.accessToken}` })
+                .send({ query: "a", pagination: { page: 1, limit: 10 } })
+                .end((err, response) => {
+                    expect(response.status).to.equal(200);
+                    expect(response).to.contain.property("text");
+
+                    const body = JSON.parse(response.text);
+                    expect(body).to.be.an("object");
+                    expect(body).to.contain.property("data");
+
+                    const data = body.data;
+                    expect(data).to.be.an("object");
+                    expect(data).to.have.property("query");
+                    expect(data).to.have.property("pagination");
+                    expect(data).to.have.property("data");
+                    expect(data.data).to.be.an("array");
+                    expect(data.data[0]).to.be.an("object");
+                    expect(data.data[0]).to.have.property("_id");
+                    expect(data.data[0]).to.have.property("username");
+                    expect(data.data[0]).to.have.property("email");
+                    expect(data.data[0]).to.have.property("fullname");
+                    expect(data.data[0]).to.have.property("role");
+                    expect(data.data[0].role).to.be.an("object");
+                    expect(data.data[0].role).to.have.property("_id");
+                    expect(data.data[0].role).to.have.property("name");
                     done();
                 });
         });
